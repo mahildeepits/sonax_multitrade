@@ -164,15 +164,6 @@ $walletBalance = authUser()->walletIncomesByKey();
         let amount = parseInt($('#amount').val()) || 0;
         let balance = {{ $walletBalance ?? 0 }};
         
-        if(amount < 20) {
-            toasterMessanger.error('Error', 'Minimum withdrawal amount is ₹20.');
-            return;
-        }
-        
-        if(amount > 1000) {
-            toasterMessanger.error('Error', 'Maximum withdrawal amount is ₹1000.');
-            return;
-        }
         
         if(amount > balance) {
             toasterMessanger.error('Error', 'Insufficient wallet balance.');
