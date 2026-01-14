@@ -60,7 +60,7 @@ $walletBalance = authUser()->walletIncomesByKey();
                                         <label for="amount" class="form-label font-weight-bold">Amount to Withdraw (₹)</label>
                                         <div class="input-group input-group-lg">
                                             <span class="input-group-text bg-transparent"><i class='bx bx-rupee' ></i></span>
-                                            <input type="number" name="amount" class="form-control" id="amount" placeholder="Enter amount" min="20" max="1000" step="1">
+                                            <input type="number" name="amount" class="form-control" id="amount" placeholder="Enter amount" min="1000" step="1">
                                         </div>
                                         <div class="invalid-feedback"></div>
                                         <small class="text-muted mt-2 d-block">Min: ₹1000</small>
