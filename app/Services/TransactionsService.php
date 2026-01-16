@@ -23,6 +23,10 @@ class TransactionsService {
 
         $user = authUser();
         
+        if ($user->is_paid == 0) {
+            return response()->json(['status' => false,'message' => 'Please activate your ID before withdrawal','code' => 400]);
+        }
+        
         if(!$request->has('withdrawal_pin') || $request->withdrawal_pin == null){
             return response()->json(['status' => false,'message' => 'Withdrawal Pin is required to withdraw','code' => 400]);
         }

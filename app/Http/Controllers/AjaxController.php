@@ -32,8 +32,6 @@ class AjaxController extends Controller
             }else if($user->is_paid == 0){
                 if($request->has('is_for') && $request->is_for == 'transfer_money'){
                     return ['status' => false,'message' => 'Sponsor is not paid'];
-                }else if($request->register){
-                    $res = ['error'=>'Sponsor is not paid','error_code'=> 403];
                 }
             }
             

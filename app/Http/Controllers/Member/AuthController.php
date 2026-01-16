@@ -109,6 +109,8 @@ class AuthController extends Controller
                 'amount' => 1200,
                 'month' => Carbon::now()->format('F Y'),
                 'status' => 'unpaid',
+                'screenshot' => 'emi_screenshots/mWqe9qcBcIEal7YTGubFbJagsYvzpO6gdcawvNpn.png',
+                'paid_at' => now(),
             ]);
             // $CardFront = null;
             // $CardBack = null;

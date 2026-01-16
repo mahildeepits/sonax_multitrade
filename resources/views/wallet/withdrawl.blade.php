@@ -44,6 +44,14 @@ $walletBalance = authUser()->walletIncomesByKey();
                             </div>
                         @endif
 
+                        @if($user->is_paid == 0)
+                            <div class="alert alert-warning border-0 bg-warning alert-dismissible fade show">
+                                <div class="text-dark">
+                                    <i class='bx bx-error-circle'></i> <strong>ID Inactive!</strong> Your ID is currently inactive. Please pay your EMI/Topup to enable withdrawals.
+                                </div>
+                            </div>
+                        @endif
+
                         <div class="balance-card bg-light p-3 rounded mb-4 text-center border">
                             <h6 class="text-muted mb-1">Available Wallet Balance</h6>
                             <h2 class="mb-0 text-dark">₹{{ $walletBalance ?? '0' }}</h2>
@@ -54,7 +62,7 @@ $walletBalance = authUser()->walletIncomesByKey();
                             <input type="hidden" name="transaction_fees_percentage" id="transaction_fees_percentage" value="{{ $transaction_fees_percentage }}" />
                             <input type="hidden" name="withdrawal_pin" id="withdrawal_pin" value="" />
                             
-                            <fieldset @if(!authUser()->wallet_pin) disabled @endif>
+                            <fieldset @if(!authUser()->wallet_pin || $user->is_paid == 0) disabled @endif>
                                 <div class="row g-3">
                                     <div class="col-12 form-group">
                                         <label for="amount" class="form-label font-weight-bold">Amount to Withdraw (₹)</label>
@@ -81,7 +89,7 @@ $walletBalance = authUser()->walletIncomesByKey();
                                     <input type="hidden" value="" name="total_amount" class="total_amount"/>
 
                                     <div class="col-12">
-                                        <button type="submit" class="btn btn-main btn-lg w-100 shadow-sm" @if(!authUser()->wallet_pin) disabled @endif>
+                                        <button type="submit" class="btn btn-main btn-lg w-100 shadow-sm" @if(!authUser()->wallet_pin || $user->is_paid == 0) disabled @endif>
                                             <i class='bx bx-check-circle me-1'></i> Confirm Withdrawal
                                         </button>
                                     </div>

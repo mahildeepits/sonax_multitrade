@@ -49,11 +49,10 @@ class RewardHelper
             $count = self::countDescendantsAtDepthWithApprovedEmi($sponsor, $level);
 
             if ($count > 0) {
-                // Check if there's a reward that exactly matches this count
-                // Using first() as per user's "match ho gya" description
-                $reward = Reward::where('pairs', $count)->first();
+                // Find the reward specifically for this level (e.g., LEVEL 1, LEVEL 2)
+                $reward = Reward::where('name', 'LEVEL ' . $level)->first();
 
-                if ($reward) {
+                if ($reward && $count >= $reward->pairs) {
                     // Check if this sponsor has already achieved this specific reward
                     $alreadyAchieved = RewardAchiever::where('user_id', $sponsor->id)
                         ->where('reward_id', $reward->id)
@@ -81,7 +80,7 @@ class RewardHelper
         $currentNodes = [$sponsor->member_id];
         
         for ($i = 0; $i < $depth; $i++) {
-            $currentNodes = User::where('is_paid',1)->whereIn('sponsor_id', $currentNodes)
+            $currentNodes = User::whereIn('sponsor_id', $currentNodes)
                 ->pluck('member_id')
                 ->toArray();
             if (empty($currentNodes)) return 0;
