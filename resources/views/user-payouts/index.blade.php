@@ -33,10 +33,16 @@
                     <div class="col-md-2">
                         <div class="form-group">
                             <label for="">Income Type</label>
-                            {!! Form::select('income_type',['direct_income' => 'Direct Income'],null,['class' => 'form-control filter','placeholder' => 'All','id' => 'income_type']) !!}
+                            @php
+                                $incomeTypes = (new \App\Models\WalletTransaction)->getKeywordNames();
+                                unset($incomeTypes['withdrawal']);
+                                unset($incomeTypes['withdrawal_refund']);
+                                // Add autopool if needed, or keep it consistent with what's active in WalletTransaction
+                            @endphp
+                            {!! Form::select('income_type', $incomeTypes, null, ['class' => 'form-control filter', 'placeholder' => 'All', 'id' => 'income_type']) !!}
                         </div>
                     </div>
-                    @if ($type == null)
+                    <!-- @if ($type == null)
                         <div class="col-md-2">
                             <div class="form-group">
                                 <label for="">List type</label>
@@ -49,8 +55,14 @@
                             <label for="">Payment Status</label>
                             {!! Form::select('status',['paid' => 'Paid','not_paid' => 'Not paid'],null,['class' => 'form-control filter','placeholder' => 'All','id' => 'payment_status']) !!}
                         </div>
-                    </div>
+                    </div> -->
                 </div>
+                {{-- <div class="row mb-2 mx-2">
+                    <div class="col-md-12">
+                        <button type="button" id="transfer-selected" class="btn btn-primary btn-sm">Transfer Selected to Wallet</button>
+                        <button type="button" id="transfer-all" class="btn btn-success btn-sm">Transfer All Payouts to Wallet</button>
+                    </div>
+                </div> --}}
                 <div class="row">
                     <div class="col-md-12 text-nowrap">
                         {!! $dataTable->table() !!}
@@ -67,6 +79,64 @@
         const userpayoutsDataTable = $('#userpayouts-table');
         $(document).ready(function(){
             userpayoutsDataTable.parent().addClass('over-flow-scroll');
+
+            // Select All logic
+            $(document).on('change', '#select-all-payouts', function() {
+                $('.payout-checkbox').prop('checked', this.checked);
+            });
+
+            $(document).on('change', '.payout-checkbox', function() {
+                if ($('.payout-checkbox:checked').length == $('.payout-checkbox').length) {
+                    $('#select-all-payouts').prop('checked', true);
+                } else {
+                    $('#select-all-payouts').prop('checked', false);
+                }
+            });
+
+            // Transfer Selected logic
+            $('#transfer-selected').click(function() {
+                let selectedIds = $('.payout-checkbox:checked').map(function() {
+                    return $(this).val();
+                }).get();
+
+                if (selectedIds.length === 0) {
+                    alert('Please select at least one payout.');
+                    return;
+                }
+
+                if (confirm('Are you sure you want to transfer selected payouts to wallet?')) {
+                    bulkTransfer(selectedIds);
+                }
+            });
+
+            // Transfer All logic
+            $('#transfer-all').click(function() {
+                if (confirm('Are you sure you want to transfer ALL pending payouts to wallet?')) {
+                    bulkTransfer('all');
+                }
+            });
+
+            function bulkTransfer(ids) {
+                $.ajax({
+                    url: "{{ route('member.payout.bulk-transfer') }}",
+                    type: 'POST',
+                    data: {
+                        _token: "{{ csrf_token() }}",
+                        ids: ids
+                    },
+                    success: function(res) {
+                        if (res.status) {
+                            alert(res.message);
+                            userpayoutsDataTable.DataTable().ajax.reload();
+                        } else {
+                            alert(res.message);
+                        }
+                    },
+                    error: function(err) {
+                        alert('Something went wrong. Please try again.');
+                    }
+                });
+            }
         });
         userpayoutsDataTable.on('preXhr.dt',function(e, settings,data){
             data.from = $('#from_date').val();

@@ -84,7 +84,19 @@ class AllUsersPayoutsDataTable extends DataTable
         })->when(($status == 'not_paid'),function($query){
             return $query->whereNull('is_paid')->whereNull('transaction_id');
         })->when($income_type,function($query) use($income_type){
-            return $query->where('income_type',$income_type);
+            if ($income_type == 'level_income') {
+                return $query->where('income_type', 'like', 'level_%');
+            }
+            if ($income_type == 'direct_income') {
+                return $query->whereIn('income_type', ['direct', 'direct_income']);
+            }
+            if ($income_type == 'reward_income') {
+                return $query->whereIn('income_type', ['reward', 'reward_income']);
+            }
+            if ($income_type == 'autopool_income') {
+                return $query->where('income_type', 'autopool');
+            }
+            return $query->where('income_type', $income_type);
         })->when($from_date,function($query) use($from_date,$to_date){
             return $query->whereBetween('created_at', [$from_date . ' 00:00:00', $to_date . ' 23:59:59']);
         });

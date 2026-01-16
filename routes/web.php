@@ -38,6 +38,7 @@ use App\Http\Controllers\Member\WalletTransactionController;
 use App\Http\Controllers\Member\EmiController;
 use App\Http\Controllers\Admin\EmiController as AdminEmiController;
 use App\Http\Controllers\TransactionsController;
+use App\Http\Controllers\Admin\LevelIncomeController;
 
 /*
 |--------------------------------------------------------------------------
@@ -171,6 +172,9 @@ Route::group(['prefix'=>'admin'], function (){
         Route::get('emis', [AdminEmiController::class, 'index'])->name('admin.emis.index');
         Route::post('emi/verify', [AdminEmiController::class, 'verify'])->name('admin.emi.verify');
         Route::post('emi/reject', [AdminEmiController::class, 'reject'])->name('admin.emi.reject');
+
+        // Level Income CRUD
+        Route::resource('level-income', LevelIncomeController::class);
     });
     Route::get('memberids',[UsersController::class,'searchMembers'])->name('search-members');
 });
@@ -244,6 +248,7 @@ Route::group(['prefix' => 'member'], function (){
         // userPayouts
         Route::get('user/payouts',[UserPayoutController::class,'index'])->name('member.user.payouts');
         Route::get('request/{id}/payouts',[UserPayoutController::class,'payoutRequest'])->name('member.request.payout');
+        Route::post('user/payouts/bulk-transfer',[WalletTransactionController::class,'bulkTransferToWallet'])->name('member.payout.bulk-transfer');
 
         Route::get('wallet',[WalletTransactionController::class,'walletIndex'])->name('member.wallet');
         // User Transaction

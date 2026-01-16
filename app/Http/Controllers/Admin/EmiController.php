@@ -77,19 +77,61 @@ class EmiController extends Controller
                     // $admin_charges = round(($incomeAmount * ($adminCharge->admin_charges ?? 0)) / 100);
                     // $net_amount = $incomeAmount - $tds - $admin_charges;
                     $net_amount = $incomeAmount;
-                    \App\Models\UserPayout::create([
-                        'user_id' => $sponsor->id,
-                        'income_type' => 'direct_income',
-                        'amount' => $incomeAmount,
-                        'tds' => 0,
-                        'admin_charges' => 0,
-                        'net_amount' => $net_amount,
-                    ]);
+                    \App\Helpers\RewardHelper::addWalletIncome($sponsor, $incomeAmount, 'direct');
                 }
             }
         }
 
+        // Generate Level Income
+        $this->generateLevelIncome($user);
+        \App\Helpers\RewardHelper::distributeEmiRewards($user);
         return response()->json(['success' => true, 'message' => 'EMI Verified and Income Generated Successfully']);
+    }
+
+    private function generateLevelIncome($user)
+    {
+        // Get all level income rules
+        $levelRules = \App\Models\LevelIncome::orderBy('level', 'asc')->get();
+        if ($levelRules->isEmpty()) {
+            return;
+        }
+
+        // Start from user's sponsor
+        $sponsorId = $user->sponsor_id;
+        if (!$sponsorId) {
+            return;
+        }
+
+        $directSponsor = User::where('member_id', $sponsorId)->first();
+        if (!$directSponsor) {
+            return;
+        }
+
+        // The user says "pehlia user de sponsor da sponsor kd lena hai, jisnu pehly level di income jawegi"
+        // So we start checking from the sponsor of the direct sponsor (2nd upline)
+        $currentAncestorMemberId = $directSponsor->sponsor_id;
+        $monthsJoined = 0;
+        if ($user->created_at) {
+            $monthsJoined = $user->created_at->diffInMonths(now());
+        }
+        foreach ($levelRules as $rule) {
+            if (!$currentAncestorMemberId) {
+                break;
+            }
+
+            $ancestor = User::where('member_id', $currentAncestorMemberId)->first();
+            if (!$ancestor) {
+                break;
+            }
+            
+
+            if ($monthsJoined <= $rule->months) {
+                \App\Helpers\RewardHelper::addWalletIncome($ancestor, $rule->amount, 'level_'. $rule->level);
+            }
+
+            // Move to next upline for the next level rule
+            $currentAncestorMemberId = $ancestor->sponsor_id;
+        }
     }
     
     public function reject(Request $request)

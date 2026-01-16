@@ -98,13 +98,26 @@
                                         $class   = $sign === '-' ? "text-danger" : "text-success";
                                         /* Change Keyword if keyword is transfer and auth is transfered user */
                                     @endphp
+                                    @php
+                                        $displayKeyword = $keyword;
+                                        if (strpos($keyword, 'level_') === 0 && strpos($keyword, '_income') !== false) {
+                                            $displayKeyword = 'level_income';
+                                        }
+                                    @endphp
                                     <div class="transaction-item d-flex justify-content-between align-items-center border-bottom"
-                                        data-keyword="{{ $keyword }}">
+                                        data-keyword="{{ $displayKeyword }}">
                                         <div class="text-wrap">
                                             <p class="mb-0" style="font-weight:500;">{!! $message !!}</p>
                                             <small class="text-muted">{{ $transaction?->created_at?->toDayDateTimeString() }}</small>
                                         </div>
-                                        <p class="{{ $class }} mb-0"><b>{{ $sign }} {{ $transaction?->amount }}</b></p>
+                                        <div class="text-end">
+                                            <p class="{{ $class }} mb-0"><b>{{ $sign }} {{ $transaction?->amount }}</b></p>
+                                            @if($keyword == 'withdrawal' && $transaction->admin_charges > 0)
+                                                <small class="text-danger" style="font-size: 0.75rem;">(Charges: -₹{{ $transaction->admin_charges }})</small>
+                                                <br>
+                                                <small class="text-muted" style="font-size: 0.75rem;">Net: ₹{{ $transaction->net_amount }}</small>
+                                            @endif
+                                        </div>
                                     </div>
                                 @endforeach
                                 <div id="pagination"></div>
@@ -232,12 +245,12 @@
                                     <h6>Total</h6>
                                     <p class="btn-sm btn-warning"><sup><i class="bx bx-rupee"></i></sup>{{ authUser()->walletIncomesByKey('total') ?? 0 }}</p>
                                 </div>
-                                <div class="d-flex justify-content-between">
+                                <!-- <div class="d-flex justify-content-between">
                                     <h6>TDS Charges</h6>
                                     <p> - <sup><i class="bx bx-rupee"></i></sup>{{ authUser()->walletIncomesByKey('tds') ?? 0 }}</p>
-                                </div>
+                                </div> -->
                                 <div class="d-flex justify-content-between">
-                                    <h6>Admin Charges</h6>
+                                    <h6> Charges</h6>
                                     <p> - <sup><i class="bx bx-rupee"></i></sup>{{ authUser()->walletIncomesByKey('adminCharges') ?? 0 }}</p>
                                 </div>
                                 <!-- <hr class="mt-0">
@@ -250,8 +263,8 @@
                                     <p class="btn-sm btn-info">+ <sup><i class="bx bx-rupee"></i></sup>{{ authUser()->walletIncomesByKey('received') ?? 0 }}</p>
                                 </div> -->
                                 <div class="d-flex justify-content-between">
-                                    <h6>Withdrawal</h6>
-                                    <p class="btn-sm btn-danger">- <sup><i class="bx bx-rupee"></i></sup>{{ authUser()->walletIncomesByKey('transaction') ?? 0 }}</p>
+                                    <h6>Net Withdrawal</h6>
+                                    <p class="btn-sm btn-danger">- <sup><i class="bx bx-rupee"></i></sup>{{ authUser()->walletIncomesByKey('withdrawls') - authUser()->walletIncomesByKey('adminCharges') ?? 0 }}</p>
                                 </div>
                                 {{-- <div class="d-flex justify-content-between">
                                     <h6>Payout Generated</h6>

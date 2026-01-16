@@ -29,8 +29,95 @@ class RewardHelper
         }
     }
 
+    /**
+     * Distribute rewards based on EMI approvals.
+     * This function iterates up the sponsor tree and checks if current sponsor
+     * qualifies for a reward based on counts of descendants at the trigger user's relative level.
+     * 
+     * @param \App\Models\User $user The user whose EMI was approved
+     */
+    public static function distributeEmiRewards($user)
+    {
+        $currentSponsorMemberId = $user->sponsor_id;
+        $level = 1;
+
+        while ($currentSponsorMemberId) {
+            $sponsor = User::where('member_id', $currentSponsorMemberId)->first();
+            if (!$sponsor) break;
+
+            // Count descendants at $level depth from this sponsor who have at least one approved EMI
+            $count = self::countDescendantsAtDepthWithApprovedEmi($sponsor, $level);
+
+            if ($count > 0) {
+                // Check if there's a reward that exactly matches this count
+                // Using first() as per user's "match ho gya" description
+                $reward = Reward::where('pairs', $count)->first();
+
+                if ($reward) {
+                    // Check if this sponsor has already achieved this specific reward
+                    $alreadyAchieved = RewardAchiever::where('user_id', $sponsor->id)
+                        ->where('reward_id', $reward->id)
+                        ->exists();
+
+                    if (!$alreadyAchieved) {
+                        // Achievement record and Reward Income generation
+                        self::saveRewardAchiever($sponsor, $reward);
+                    }
+                }
+            }
+
+            // Move up to the next sponsor in the referral chain
+            $currentSponsorMemberId = $sponsor->sponsor_id;
+            // Increase level: we check depth 1 for sponsor 1, depth 2 for sponsor 2, etc.
+            $level++;
+        }
+    }
+
+    /**
+     * Helper to count descendants at a specific depth who have at least one approved EMI.
+     */
+    public static function countDescendantsAtDepthWithApprovedEmi($sponsor, $depth)
+    {
+        $currentNodes = [$sponsor->member_id];
+        
+        for ($i = 0; $i < $depth; $i++) {
+            $currentNodes = User::where('is_paid',1)->whereIn('sponsor_id', $currentNodes)
+                ->pluck('member_id')
+                ->toArray();
+            if (empty($currentNodes)) return 0;
+        }
+
+        // Return count of unique users at this depth with at least one approved EMI
+        return User::where('is_paid',1)->whereIn('member_id', $currentNodes)
+            ->whereHas('emis', function($query) {
+                $query->where('status', 'approved');
+            })
+            ->count();
+    }
+
     public static function getRewards(){
         return Reward::get();
+    }
+
+    public static function addWalletIncome($user, $amount, $type)
+    {
+        if ($amount <= 0) return;
+        
+        \App\Models\UserPayout::create([
+            'user_id' => $user->id,
+            'income_type' => $type,
+            'amount' => $amount,
+            'tds' => 0,
+            'admin_charges' => 0,
+            'net_amount' => $amount,
+            'is_requested' => now(), // Mark as already moved/available in wallet
+        ]);
+
+        \App\Models\WalletTransaction::create([
+            'user_id' => $user->member_id,
+            'keyword' => $type . '_income',
+            'amount' => $amount,
+        ]);
     }
 
     public static function saveRewardAchiever($user,$reward): RewardAchiever
@@ -40,6 +127,10 @@ class RewardHelper
         $modelObject->reward_id = $reward->id;
         $modelObject->pairs = $reward->pairs;
         $modelObject->save();
+
+        if($reward->amount > 0){
+            self::addWalletIncome($user, $reward->amount, 'reward');
+        }
         return $modelObject;
     }
 
@@ -55,17 +146,10 @@ class RewardHelper
             $net_amount = round((200 - $tds) - $admin_charges);
             if($payout != null && $payout->pair_count < 60){
                 $payout_count = $payout->pair_count + 1;
-                $pair_amount = $payout->pair_amount + $pair_amount;
-                $tds = $payout->tds + $tds;
-                $admin_charges = $payout->admin_charge + $admin_charges;
-                $net_amount = $payout->net_amount + $net_amount;
-                $payout->update([
-                    'pair_count' => $payout_count,
-                    'pair_amount' => $pair_amount,
-                    'tds' => 0,
-                    'admin_charge' => 0,
-                    'net_amount' => $pair_amount,
-                ]);
+                $payout->update(['pair_count' => $payout_count]);
+                
+                self::addWalletIncome($sponsor, 200, 'direct');
+
                 if($payout_count == 60){
                     self::registerBonus($sponsor,$sponsor->payouts->count());
                     self::registerBonus($sponsor->sponsor);
@@ -82,6 +166,7 @@ class RewardHelper
                     'admin_charge' => 0,
                     'net_amount' => $pair_amount,
                 ]);
+                self::addWalletIncome($sponsor, 200, 'direct');
             }
         }
     }
@@ -172,37 +257,7 @@ class RewardHelper
                                 $level_income = $kit->level16_25;
                             }
                         }
-                        $payout = Payout::where('username',$user->member_id)->where('level',$level)->whereNull('credit_or_cut')->get()->last();
-                        if($payout != null){
-                            $payoutArray = $payout->toArray();
-                            $total = $level_income + $payoutArray['level_income'];
-                            $tds = round(($total*$adminCharge->tds_charges)/100);
-                            $admin_charges = round(($total*$adminCharge->admin_charges)/100);
-                            $net_amount = round(($total-$tds)-$admin_charges);
-                            $payout->update([
-                                'level' => $level,
-                                'level_income' => $total,
-                                'tds' => 0,
-                                'admin_charge' => 0,
-                                'net_amount' => $total,
-                            ]);
-                        }else{
-                            $tds = round(($level_income*$adminCharge->tds_charges)/100);
-                            $admin_charges = round(($level_income*$adminCharge->admin_charges)/100);
-                            $net_amount = round(($level_income-$tds)-$admin_charges);
-                            $payout = Payout::create([
-                                'username' => $user->member_id,
-                                'tree' => 1,
-                                'pair_count' => 1,
-                                'pair_amount' => 0,
-                                'direct_income' => 0,
-                                'tds' => 0,
-                                'admin_charge' => 0,
-                                'net_amount' => $level_income,
-                                'level' => $level,
-                                'level_income' => $level_income,
-                            ]);
-                        }
+                        self::addWalletIncome($user, $level_income, 'level_'.$level);
                     }
                 }
             }
@@ -220,24 +275,7 @@ class RewardHelper
             $tds = round(($amount * $adminCharge->tds_charges)/100);
             $admin_charges = round(($amount * $adminCharge->admin_charges)/100);
             $net_amount = round(($amount - $tds) - $admin_charges);
-            $payout = UserPayout::where('user_id',$user->id)->where('income_type','direct')->whereNull('is_requested')->whereNull('is_paid')->latest()->first();
-            if($payout != null){
-                $payout->update([
-                    'amount' => round($payout->amount + $amount),
-                    'tds' => 0,
-                    'admin_charges' => 0,
-                    'net_amount' => round($payout->net_amount + $amount),
-                ]);
-            }else{
-                UserPayout::create([
-                    'user_id' => $user->id,
-                    'income_type' => 'direct',
-                    'amount' => $amount,
-                    'tds' => 0,
-                    'admin_charges' => 0,
-                    'net_amount' => $amount,
-                ]);
-            }
+            self::addWalletIncome($user, $amount, 'direct');
         }
     }
     public static function sponsorIncome($user_id){
@@ -250,24 +288,7 @@ class RewardHelper
         $sponsor = $user->sponsor;
         for ($i=0; $i < 6; $i++) { 
             if($sponsor != null){
-                $payout = UserPayout::where('user_id',$sponsor->id)->where('income_type','level')->whereNull('is_requested')->whereNull('is_paid')->latest()->first();
-                if($payout != null){
-                    $payout->update([
-                        'amount' => round($payout->amount + $amount),
-                        'tds' => 0,
-                        'admin_charges' => 0,
-                        'net_amount' => round($payout->net_amount + $amount),
-                    ]);
-                }else{
-                    UserPayout::create([
-                        'user_id' => $sponsor->id,
-                        'income_type' => 'level',
-                        'amount' => $amount,
-                        'tds' => 0,
-                        'admin_charges' => 0,
-                        'net_amount' => $amount,
-                    ]);
-                }
+                self::addWalletIncome($sponsor, $amount, 'level');
             }
             $sponsor = $sponsor->sponsor ?? null;
         }
@@ -281,24 +302,7 @@ class RewardHelper
         $net_amount = round(($amount - $tds) - $admin_charges);    
         $charityUsers = User::whereIn('member_id',['CH0001','CH0002'])->get();
         foreach ($charityUsers as $user) {
-            $payout = UserPayout::where('user_id',$user->id)->where('income_type','charity')->whereNull('is_requested')->whereNull('is_paid')->latest()->first();
-            if($payout != null){
-                $payout->update([
-                    'amount' => round($payout->amount + $amount),
-                    'tds' => 0,
-                    'admin_charges' => 0,
-                    'net_amount' => round($payout->net_amount + $amount),
-                ]);
-            }else{
-                UserPayout::create([
-                    'user_id' => $user->id,
-                    'income_type' => 'charity',
-                    'amount' => $amount,
-                    'tds' => 0,
-                    'admin_charges' => 0,
-                    'net_amount' => $amount,
-                ]);
-            }
+            self::addWalletIncome($user, $amount, 'charity');
         }
     }
     public static function autopoolIncome($user_id){
@@ -384,23 +388,6 @@ class RewardHelper
         $tds = round(($amount * $adminCharge->tds_charges)/100);
         $admin_charges = round(($amount * $adminCharge->admin_charges)/100);
         $net_amount = round(($amount - $tds) - $admin_charges);
-        $payout = UserPayout::where('user_id',$user->id)->where('income_type','autopool')->whereNull('is_requested')->whereNull('is_paid')->latest()->first();
-        if($payout != null){
-            $payout->update([
-                'amount' => $amount,
-                'tds' => 0,
-                'admin_charges' => 0,
-                'net_amount' => $amount,
-            ]);
-        }else{
-            UserPayout::create([
-                'user_id' => $user->id,
-                'income_type' => 'autopool',
-                'amount' => $amount,
-                'tds' => 0,
-                'admin_charges' => 0,
-                'net_amount' => $amount,
-            ]);
-        }
+        self::addWalletIncome($user, $amount, 'autopool');
     }
 }

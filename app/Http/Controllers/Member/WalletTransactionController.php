@@ -30,15 +30,19 @@ class WalletTransactionController extends Controller
     public function transferToWallet(Request $request) {
         $user = authUser();
         $id = decrypt($request->id);
-        $payout = \App\Models\UserPayout::where('user_id', $user->id)->where('id', $id)->whereNull('is_requested')->first();
+        $payout = \App\Models\UserPayout::where('user_id', $user->id)
+            ->where('id', $id)
+            ->whereNull('is_requested')
+            ->where('income_type', '!=', 'withdrawal')
+            ->first();
         
         if ($payout) {
             $amount = $payout->amount;
             if ($amount >= 10) {
                 WalletTransaction::create([
                     'user_id'  => authUser()->member_id,
-                    'amount'   => $amount,
                     'keyword'  => 'self_transfer_'.$payout->income_type,
+                    'amount'   => $amount,
                 ]);
                 $payout->is_requested = Carbon::now();
                 $payout->save();
@@ -50,6 +54,47 @@ class WalletTransactionController extends Controller
         }
         \Session::flash('error','Error|Income record not found or already transferred!');
         return redirect()->back();
+    }
+
+    public function bulkTransferToWallet(Request $request) {
+        $user = authUser();
+        $ids = $request->ids;
+        
+        DB::beginTransaction();
+        try {
+            $query = \App\Models\UserPayout::where('user_id', $user->id)
+                    ->whereNull('is_requested')
+                    ->where('income_type', '!=', 'withdrawal');
+
+            if ($ids === 'all') {
+                $payouts = $query->get();
+            } else {
+                $payouts = $query->whereIn('id', $ids)->get();
+            }
+
+            if ($payouts->isEmpty()) {
+                return response()->json(['status' => false, 'message' => 'No eligible payout records found!']);
+            }
+
+            foreach ($payouts as $payout) {
+                $amount = $payout->amount;
+                if ($amount > 0) {
+                    WalletTransaction::create([
+                        'user_id'  => $user->member_id,
+                        'keyword'  => 'self_transfer_'.$payout->income_type,
+                        'amount'   => $amount,
+                    ]);
+                    $payout->is_requested = Carbon::now();
+                    $payout->save();
+                }
+            }
+
+            DB::commit();
+            return response()->json(['status' => true, 'message' => 'Payouts transferred to Wallet successfully!']);
+        } catch (\Throwable $th) {
+            DB::rollBack();
+            return response()->json(['status' => false, 'message' => 'Error: ' . $th->getMessage()]);
+        }
     }
 
     public function walletTransaction(Request $request) {

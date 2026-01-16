@@ -31,26 +31,28 @@
                             {!! Form::select('member_id',[],null,['class'=>'form-control filter select2-ajax','placeholder'=>'Enter Member id','id' => 'member_id']) !!}
                         </div>
                     </div>
+                    @if ($type == 'income')
                     <div class="col-md-2">
                         <div class="form-group">
                             <label for="">Income Type</label>
-                            {!! Form::select('income_type',['withdrawal' => 'Withdrawal','direct_income' => 'Direct Income','level' => 'Level','autopool' => 'Autopool','charity' => 'Charity'],null,['class' => 'form-control filter','placeholder' => 'All','id' => 'income_type']) !!}
+                            @php
+                                $incomeTypes = (new \App\Models\WalletTransaction)->getKeywordNames();
+                                unset($incomeTypes['withdrawal']);
+                                unset($incomeTypes['withdrawal_refund']);
+                            @endphp
+                            {!! Form::select('income_type', $incomeTypes, null, ['class' => 'form-control filter', 'placeholder' => 'All', 'id' => 'income_type']) !!}
                         </div>
                     </div>
-                    @if ($type == null)
-                        <div class="col-md-2">
-                            <div class="form-group">
-                                <label for="">List type</label>
-                                {!! Form::select('status',['requested' => 'Requested','not_requested' => 'Not Requested'],null,['class' => 'form-control filter','placeholder' => 'All','id' => 'list_type']) !!}
-                            </div>
-                        </div>
                     @endif
+
+                    @if ($type == 'withdrawal' || $type == null)
                     <div class="col-md-2">
                         <div class="form-group">
                             <label for="">Payment Status</label>
                             {!! Form::select('status',['paid' => 'Paid','not_paid' => 'Not paid'],null,['class' => 'form-control filter','placeholder' => 'All','id' => 'payment_status']) !!}
                         </div>
                     </div>
+                    @endif
                     <div class="col-lg-12 text-nowrap">
                         {!! $dataTable->table() !!}
                     </div>

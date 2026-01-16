@@ -25,7 +25,7 @@
                     </div>
                 </div>
             </div>
-            <div class="col-sm">
+            <!-- <div class="col-sm">
                 <div class="card colorfull-bg">
                     <div class="card-body">
                         <div class="media">
@@ -42,7 +42,7 @@
                         </div>
                     </div>
                 </div>
-            </div>
+            </div> -->
             <div class="col-sm">
                 <div class="card colorfull-bg">
                     <div class="card-body">
@@ -61,7 +61,7 @@
                     </div>
                 </div>
             </div>
-            <div class="col-md offset-2 offset-sm-0">
+            <!-- <div class="col-md offset-2 offset-sm-0">
                 <div class="card colorfull-bg">
                     <div class="card-body">
                         <div class="media">
@@ -78,8 +78,8 @@
                         </div>
                     </div>
                 </div>
-            </div>
-            <div class="col-sm">
+            </div> -->
+            <!-- <div class="col-sm">
                 <div class="card colorfull-bg">
                     <div class="card-body">
                         <div class="media">
@@ -96,7 +96,7 @@
                         </div>
                     </div>
                 </div>
-            </div>
+            </div> -->
         </div>
     </div><!-- Main Wrapper -->
 @endsection

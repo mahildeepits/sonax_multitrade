@@ -20,7 +20,7 @@
                         <div class="card-body">
                             <div class="d-flex align-items-center">
                                 <h5 class="mb-0 text-white"> ₹
-                                    {{ $user->payouts()->sum('amount') }}
+                                    {{ $user->total_income }}
                                 </h5>
                                 <div class="ms-auto">
                                     <i class='bx bx-recycle fs-3 text-white'></i>
@@ -58,7 +58,7 @@
                             <div class="card-body">
                                 <div class="d-flex align-items-center">
                                     <h5 class="mb-0 text-white">
-                                        ₹ {{ $user->payouts()->where('income_type', 'direct_income')->sum('amount') }}
+                                        ₹ {{ $user->direct_bonus_income }}
                                     </h5>
                                     <div class="ms-auto">
                                         <i class='bx bx-coin fs-3 text-white'></i>
@@ -79,7 +79,7 @@
                             <div class="card-body">
                                 <div class="d-flex align-items-center">
                                     <h5 class="mb-0 text-white">
-                                        ₹ {{ $user->payouts()->where('income_type', 'like', 'level%')->sum('amount') }} 
+                                        ₹ {{ $user->level_income }} 
                                     </h5>
                                     <div class="ms-auto">
                                         <i class='bx bx-money fs-3 text-white'></i>
@@ -104,7 +104,7 @@
                             <div class="card-body">
                                 <div class="d-flex align-items-center">
                                     <h5 class="mb-0 text-white">
-                                        ₹ {{ $user->payouts()->where('income_type', 'reward')->sum('amount') }}
+                                        ₹ {{ $user->autopool_income }}
                                     </h5>
                                     <div class="ms-auto">
                                         <i class='bx bx-recycle fs-3 text-white'></i>

@@ -23,6 +23,15 @@
                                             @enderror
                                         </div>
                                         <div class="col-md-3">
+                                            {!! Form::label('amount','Amount') !!}
+                                            {!! Form::text('amount',null,['class'=>'form-control']) !!}
+                                            @error('amount')
+                                                <small class="text-danger">
+                                                    {{ $message }}
+                                                </small>
+                                            @enderror
+                                        </div>
+                                        <div class="col-md-3">
                                             {!! Form::label('name','Name') !!}
                                             {!! Form::text('name',null,['class'=>'form-control']) !!}
                                             @error('name')
@@ -49,7 +58,7 @@
                                                 </small>
                                             @enderror
                                         </div>
-                                        <div class="col-md-3 mt-3">
+                                        <div class="col-md-3 mt-4 pt-2">
                                             {!! Form::submit('Save Reward',['class'=>'btn btn-primary']) !!}
                                         </div>
                                     </div>
@@ -72,6 +81,7 @@
                                     <th>#</th>
                                     <th>Image</th>
                                     <th>Pairs</th>
+                                    <th>Amount</th>
                                     <th>Name</th>
                                     <th>Rank</th>
                                     <th>Action</th>
@@ -83,6 +93,7 @@
                                         <td>{{ $loop->index+1 }}</td>
                                         <td><img alt="{{ $reward->name }}" src="{{ asset('rewards/'.$reward->image) }}" width="50" /> </td>
                                         <td>{{ $reward->pairs }}</td>
+                                        <td>{{ $reward->amount }}</td>
                                         <td>{{ $reward->name }}</td>
                                         <td>{{ $reward->rank }}</td>
                                         <td>

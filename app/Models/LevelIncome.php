@@ -5,9 +5,13 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class Reward extends Model
+class LevelIncome extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['pairs','name','rank','image','amount'];
+    protected $fillable = [
+        'level',
+        'amount',
+        'months',
+    ];
 }

@@ -16,6 +16,7 @@ class RewardsController extends Controller
     public function save(Request $request){
         $request->validate([
             'pairs' => 'required',
+            'amount' => 'required',
             'name' => 'required',
             'rank' => 'required',
             'image' => 'required'
@@ -25,6 +26,7 @@ class RewardsController extends Controller
 
         Reward::create([
             'pairs' => $request->pairs,
+            'amount' => $request->amount,
             'name' => $request->name,
             'rank' => $request->rank,
             'image' => $imageName,
@@ -34,6 +36,13 @@ class RewardsController extends Controller
     }
 
     public function delete($id){
-        dd($id);
+        $reward = Reward::find($id);
+        if($reward){
+            $reward->delete();
+            \Session::flash('success','Success|Reward deleted successfully');
+        }else{
+            \Session::flash('error','Error|Reward not found');
+        }
+        return back();
     }
 }

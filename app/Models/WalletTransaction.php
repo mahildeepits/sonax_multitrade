@@ -36,15 +36,21 @@ class WalletTransaction extends Model
 
     // New protected array for keywords and names
     protected $keywordNames = [
-        'self_transfer_direct_income'      => 'Self Transfered Direct Income',
-        'self_transfer_level'       => 'Self Transfered Team Performance',
-        'self_transfer_autopool'    => 'Self Transfered AutoPool Income',
-        'buy_pin'                   => 'Pin Purchased ',
-        'transfer'                  => 'Transfered Money To',
-        'self_topup'                => 'Self Topup',
-        'user_topup'                => 'User topup',
-        'pin_transfer'              => 'Received Money From ',
+        // 'self_transfer_direct_income'      => 'Self Transfered Direct Income',
+        // 'self_transfer_level'       => 'Self Transfered Team /Level',
+        // 'self_transfer_autopool'    => 'Self Transfered AutoPool Income',
+        // 'buy_pin'                   => 'Pin Purchased ',
+        // 'transfer'                  => 'Transfered Money To',
+        // 'self_topup'                => 'Self Topup',
+        // 'user_topup'                => 'User topup',
+        // 'pin_transfer'              => 'Received Money From ',
         'withdrawal'                => 'Withdrawal',
+        'withdrawal_refund'         => 'Withdrawal Refunded',
+        'direct_income'             => 'Direct Income',
+        'level_income'              => 'Level Income',
+        // 'autopool_income'           => 'AutoPool Income',
+        'reward_income'             => 'Reward Income',
+        // 'charity_income'            => 'Charity Income',
     ];
 
     public function getKeywordNames()
@@ -64,16 +70,32 @@ class WalletTransaction extends Model
 
     public function setAmountAttribute($value)
     {
-        $adminCharge = AdminCharge::first(); // Fetch AdminCharge settings
-
-        $tds = round(($value * $adminCharge->tds_charges) / 100);
-        $admin_charges = round(($value * $adminCharge->admin_charges) / 100);
-        $net_amount = round($value - $tds - $admin_charges);
-
         $this->attributes['amount'] = round($value);
-        $this->attributes['tds'] = 0;
-        $this->attributes['admin_charges'] = 0;
-        $this->attributes['net_amount'] = round($value);
+        
+        // Use provided keyword or fallback to null
+        $keyword = $this->attributes['keyword'] ?? null;
+
+        if ($keyword == 'withdrawal') {
+            $adminCharge = AdminCharge::first();
+            $tds = round(($value * ($adminCharge->tds_charges ?? 0)) / 100);
+            $admin_charges = round(($value * ($adminCharge->admin_charges ?? 0)) / 100);
+            $net_amount = round($value - $tds - $admin_charges);
+
+            // Set these ONLY if they are not already manually provided
+            if (!isset($this->attributes['tds'])) {
+                $this->attributes['tds'] = $tds;
+            }
+            if (!isset($this->attributes['admin_charges'])) {
+                $this->attributes['admin_charges'] = $admin_charges;
+            }
+            if (!isset($this->attributes['net_amount'])) {
+                $this->attributes['net_amount'] = $net_amount;
+            }
+        } else {
+            if (!isset($this->attributes['net_amount'])) {
+                $this->attributes['net_amount'] = round($value);
+            }
+        }
     }
 
     public function getSlugAttribute() {
@@ -101,7 +123,14 @@ class WalletTransaction extends Model
             } else if ($this->keyword == 'pin_transfer') {
                 $transactionText = "$transactionText: {$this->user->name}";
             }
+        } else if (strpos($this->keyword, 'self_transfer_level_') === 0) {
+            $level = str_replace('self_transfer_level_', '', $this->keyword);
+            $transactionText = "Self Transfered Level $level Income";
+        } else if (strpos($this->keyword, 'level_') === 0 && strpos($this->keyword, '_income') !== false) {
+            $level = str_replace(['level_', '_income'], '', $this->keyword);
+            $transactionText = "Level $level Income";
         }
+
         return $transactionText;
     }
 }

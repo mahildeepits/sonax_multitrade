@@ -9,7 +9,7 @@
                     <i class="menu-icon icon-home4"></i><span>Dashboard</span>
                 </a>
             </li>
-            <li>
+            <!-- <li>
                 <a href="javascript:void(0)">
                     <i class="menu-icon icon-apps"></i><span>Joining Kits</span><i class="accordion-icon fa fa-angle-left"></i>
                 </a>
@@ -20,7 +20,7 @@
                     <li><a href="{{ route('joining.pin.status') }}">Pin Status</a></li>
                     <li><a href="{{ route('admin.pin.history') }}">Pin History</a></li>
                 </ul>
-            </li>
+            </li> -->
             <li>
                 <a href="{{ route('admin.all.payouts') }}">
                     <i class="menu-icon fa fa-money"></i><span>Income Report</span>
@@ -34,6 +34,11 @@
             <li>
                 <a href="{{ route('admin.emis.index') }}">
                     <i class="menu-icon fa fa-rupee"></i><span>EMI Requests</span>
+                </a>
+            </li>
+            <li>
+                <a href="{{ route('level-income.index') }}">
+                    <i class="menu-icon fa fa-line-chart"></i><span>Level Income</span>
                 </a>
             </li>
             {{-- <li>

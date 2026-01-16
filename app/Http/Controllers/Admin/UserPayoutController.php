@@ -52,7 +52,7 @@ class UserPayoutController extends Controller
             'status' => 'paid',
         ];
         try {
-            DB::beginTransaction();
+            \DB::beginTransaction();
             if($payout->update($data)){
                 // Check if it's a withdrawal and update linked records
                 if ($payout->income_type == 'withdrawal') {
@@ -70,13 +70,13 @@ class UserPayoutController extends Controller
                         ->update(['status' => 1, 'transaction_id' => $request->transaction_id]);
                 }
                 
-                DB::commit();
+                \DB::commit();
                 return ['status' => true,'message' => 'User is paid','modal' => true,'code' => 200];
             }
             throw new \Exception("Error Processing Request", 1);
             
         } catch (\Throwable $th) {
-            DB::rollBack();
+            \DB::rollBack();
             return ['status' => false,'message' => $th->getMessage(),'code' => 400];
         }
     }
@@ -84,27 +84,39 @@ class UserPayoutController extends Controller
     public function rejectPayout($id){
         $payout = UserPayout::findOrFail(decrypt($id));
         try {
-            DB::beginTransaction();
+            \DB::beginTransaction();
             if($payout->update(['status' => 'rejected', 'is_requested' => null])){
-                // If it's a withdrawal, mark linked transactions as rejected
+                // If it's a withdrawal, mark linked transactions as rejected and refund to wallet
                 if ($payout->income_type == 'withdrawal') {
+                    // Update Transaction model
                     \App\Models\Transaction::where('user_id', $payout->user_id)
                         ->where('type', 'withdrawl')
                         ->where('amount', $payout->amount)
                         ->where('status', 'pending')
                         ->update(['status' => 'rejected']);
 
-                    \App\Models\WalletTransaction::where('transaction_id', $payout->transaction_id)
+                    // Update existing WalletTransaction status to 2 (Rejected)
+                    \App\Models\WalletTransaction::where('user_id', $payout?->user?->member_id)
+                        ->where('amount', $payout->amount)
                         ->where('keyword', 'withdrawal')
                         ->where('status', 0)
-                        ->update(['status' => 2]); // Use 2 for rejected
+                        ->update(['status' => 2]);
+
+                    // Create NEW WalletTransaction for REFUND
+                    \App\Models\WalletTransaction::create([
+                        'user_id' => $payout?->user?->member_id,
+                        'keyword' => 'withdrawal_refund',
+                        'amount' => $payout->amount,
+                        'status' => 1, // Status 1 for success
+                        'transaction_id' => $payout->id,
+                    ]);
                 }
                 
-                DB::commit();
+                \DB::commit();
                 return back()->with('success','Success|Payout request rejected successfully');
             }
         } catch (\Throwable $th) {
-            DB::rollBack();
+            \DB::rollBack();
             return back()->with('error','Error|'.$th->getMessage());
         }
     }

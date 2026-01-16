@@ -96,29 +96,56 @@ class User extends Authenticatable
         // Calculate Total Income (Credits)
         // Sum of all incomes that are NOT withdrawals
         $credits = $this->walletTransations()
-                        ->whereIn('keyword', ['self_transfer_direct_income'])
+                        ->where(function($query) {
+                            $query->whereIn('keyword', [
+                                'self_transfer_direct_income', 
+                                'self_transfer_direct', 
+                                'self_transfer_autopool', 
+                                'self_transfer_reward',
+                                'self_transfer_charity',
+                                'direct_income',
+                                'level_income',
+                                'autopool_income',
+                                'reward_income',
+                                'charity_income',
+                                'pin_transfer',
+                            ])->orWhere('keyword', 'LIKE', 'self_transfer_level%')
+                              ->orWhere('keyword', 'LIKE', 'level%income');
+                        })
                         ->sum('amount');
         
         // Calculate Withdrawals (Debits)
-        // Sum of all withdrawals that are NOT rejected
+        // Only count pending or successful withdrawals
         $debits = $this->walletTransations()
                        ->where('keyword', 'withdrawal')
-                    //    ->where(function($q){
-                    //        $q->Where('is_paid', '!=', '1');
-                    //    })
+                       ->where('status', '!=', 2)
                        ->sum('amount');
+        
+        $charges = $this->walletTransations()
+                       ->where('keyword', 'withdrawal')
+                       ->where('status', '!=', 2)
+                       ->sum('admin_charges');
+
+        $tds = $this->walletTransations()
+                    ->where('keyword', 'withdrawal')
+                    ->where('status', '!=', 2)
+                    ->sum('tds');
 
         $balance = $credits - $debits;
 
         $incomeArray = [
             'totalIncome'   => $balance,
-            'directIncome'  => $this->payouts()->where('income_type', 'direct_income')->sum('amount'),
-            'teamPerform'   => $this->payouts()->where('income_type', 'like', 'level%')->sum('amount'),
-            'autopool'      => $this->payouts()->where('income_type', 'reward')->sum('amount'), // Assuming 'reward' is mapped to autopool/reward key
+            'directIncome'  => $this->payouts()->whereIn('income_type', ['direct_income', 'direct'])->sum('amount'),
+            'teamPerform'   => $this->payouts()->where(function($q) {
+                                   $q->where('income_type', 'level')->orWhere('income_type', 'LIKE', 'level_%');
+                               })->sum('amount'),
+            'autopool'      => $this->payouts()->whereIn('income_type', ['reward', 'autopool'])->sum('amount'), 
             'total'         => $credits,
             'transaction'   => 0,
             'withdrawls'    => $debits,
             'received'      => 0,
+            'adminCharges'  => $charges,
+            'tds'           => $tds,
         ];
 
         return $incomeArray[$key] ?? 0;
@@ -252,25 +279,18 @@ class User extends Authenticatable
 
     // Dashboard Counts
     public function getLevelIncomeAttribute(){
-        $walletTransferedIncome = 0;
-        $levelIncome = $this->unPaidPayouts()->where('income_type','level')->sum('amount') ?? 0;
-        $walletTransferedIncome = $this->walletTransations->where('keyword', 'self_transfer_level')->sum('amount') ?? 0;
-        return round($levelIncome - $walletTransferedIncome);
+        return round($this->payouts()->where(function($q) {
+            $q->where('income_type', 'level')->orWhere('income_type', 'LIKE', 'level_%');
+        })->sum('amount') ?? 0);
     }
     public function getDirectBonusIncomeAttribute(){
-        $walletTransferedIncome = 0;
-        $directIncome = $this->unPaidPayouts()->where('income_type','direct')->sum('amount') ?? 0;
-        $walletTransferedIncome = $this->walletTransations->where('keyword', 'self_transfer_direct')->sum('amount') ?? 0;
-        return round($directIncome - $walletTransferedIncome);
+        return round($this->payouts()->whereIn('income_type', ['direct', 'direct_income'])->sum('amount') ?? 0);
     }
     public function getTotalIncomeAttribute(){
-        return round(($this->unPaidPayouts()->whereNull('is_requested')->sum('net_amount')));
+        return round($this->payouts()->where('income_type', '!=', 'withdrawal')->sum('amount'));
     }
     public function getAutopoolIncomeAttribute(){
-        $walletTransferedIncome = 0;
-        $autopoolIncome = $this->unPaidPayouts()->where('income_type','autopool')->sum('amount') ?? 0;
-        $walletTransferedIncome = $this->walletTransations->where('keyword', 'self_transfer_autopool')->sum('amount') ?? 0;
-        return round($autopoolIncome - $walletTransferedIncome);
+        return round($this->payouts()->whereIn('income_type', ['autopool', 'reward'])->sum('amount') ?? 0);
     }
     public function getBonusIncomeAttribute(){
         return $this->unPaidPayouts()->sum('pair_amount');
@@ -322,6 +342,11 @@ class User extends Authenticatable
     }
     public function recievedMoney() {
         return $this->hasMany(WalletTransaction::class, 'transfered_to', 'member_id');
+    }
+
+    public function emis()
+    {
+        return $this->hasMany(Emi::class, 'user_id', 'id');
     }
 
 

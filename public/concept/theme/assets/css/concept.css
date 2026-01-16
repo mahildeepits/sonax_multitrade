@@ -3722,7 +3722,7 @@ body:not(.page-sidebar-fixed).collapsed-sidebar .secondary-sidebar-menu {
     display: block;
     font-weight: 400;
     font-size: 13px;
-    padding: 7px 32px;
+    padding: 7px 15px!important;
     color: #596B8C;
     line-height: 1.5!important;
     -webkit-font-smoothing: antialiased;
@@ -3773,6 +3773,8 @@ body:not(.page-sidebar-fixed).collapsed-sidebar .secondary-sidebar-menu {
     font-size: 17px;
     vertical-align: middle;
     line-height: 22px;
+    width: 10%!important;
+    text-align: center!important;
 }
 
 .secondary-sidebar-menu ul li.menu-divider {

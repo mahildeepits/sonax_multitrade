@@ -82,8 +82,10 @@ class TransactionsService {
             // Create WalletTransaction to deduct amount from wallet
             \App\Models\WalletTransaction::create([
                 'user_id' => $user->member_id,
-                'amount' => $requestAmt,
                 'keyword' => 'withdrawal',
+                'amount' => $requestAmt,
+                'admin_charges' => $fees,
+                'net_amount' => $netAmount,
                 'status' => 0, // 0 for pending withdrawal
                 'transaction_id' => $transaction->id,
             ]);
