@@ -33,6 +33,9 @@ class AuthController extends Controller
     public function login(LoginRequest $request){
         $user = \Auth::guard('member');
         if($user->attempt(['member_id'=>$request->username,'password'=>$request->password,'is_blocked'=>0])){
+            if($user->user()->role == 1){
+                return back()->withErrors(['username'=>'This user is not allowed to login here']);
+            }
             $rewards = $user->user()->latestReward();
             if($rewards !== null){
                 Session::put('current_rank',$rewards->reward->rank);
