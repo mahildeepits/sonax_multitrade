@@ -47,7 +47,7 @@ $walletBalance = authUser()->walletIncomesByKey();
                         @if($user->is_paid == 0)
                             <div class="alert alert-warning border-0 bg-warning alert-dismissible fade show">
                                 <div class="text-dark">
-                                    <i class='bx bx-error-circle'></i> <strong>ID Inactive!</strong> Your ID is currently inactive. Please pay your EMI/Topup to enable withdrawals.
+                                    <i class='bx bx-error-circle'></i> <strong>ID Inactive!</strong> Your ID is currently inactive. Please pay your Installments/Topup to enable withdrawals.
                                 </div>
                             </div>
                         @endif

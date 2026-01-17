@@ -3,7 +3,7 @@
 <div class="page-content">
     <div class="card radius-10">
         <div class="card-header border-bottom-0 bg-transparent">
-            <h5 class="mb-0">My EMIs</h5>
+            <h5 class="mb-0">My Installments</h5>
         </div>
         <div class="card-body">
             <div class="table-responsive">
@@ -11,7 +11,7 @@
                     <thead class="table-light">
                         <tr>
                             <th>#</th>
-                            <th>EMI Amount</th>
+                            <th>Installment Amount</th>
                             <th>Month</th>
                             <th>Created At</th>
                             <th>Paid At</th>
@@ -50,7 +50,7 @@
                         </tr>
                         @empty
                         <tr>
-                            <td colspan="8" class="text-center">No EMIs found.</td>
+                            <td colspan="8" class="text-center">No Installments found.</td>
                         </tr>
                         @endforelse
                     </tbody>
@@ -65,7 +65,7 @@
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title">Pay EMI</h5>
+                <h5 class="modal-title">Pay Installments</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">

@@ -1,9 +1,9 @@
 @extends('admin.layouts.admin')
-@section('title', 'EMI Requests')
+@section('title', 'Installment Requests')
 @section('content')
 <div id="main-wrapper">
     <div class="content-header">
-        <h1 class="page-title">EMI Requests</h1>
+        <h1 class="page-title">Installment Requests</h1>
     </div>
     
     <div class="card">

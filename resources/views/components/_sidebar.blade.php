@@ -97,7 +97,7 @@
                 <a href="{{ route('member.emis.index') }}">
                      <div class="parent-icon"><i class="bx bx-rupee"></i>
                      </div>
-                     <div class="menu-title">EMI</div>
+                     <div class="menu-title">Installments</div>
                 </a>
             </li>
             <li>

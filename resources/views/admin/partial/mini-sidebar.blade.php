@@ -33,7 +33,7 @@
             </li>
             <li>
                 <a href="{{ route('admin.emis.index') }}">
-                    <i class="menu-icon fa fa-rupee"></i><span>EMI Requests</span>
+                    <i class="menu-icon fa fa-rupee"></i><span>Installment Requests</span>
                 </a>
             </li>
             <li>

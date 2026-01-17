@@ -103,14 +103,17 @@ class AuthController extends Controller
             }
             $userModel->save();
 
-            // Create First EMI
-            \App\Models\Emi::create([
-                'user_id' => $userModel->id,
-                'amount' => 1200,
-                'month' => Carbon::now()->format('F Y'),
-                'status' => 'submitted',
-                'paid_at' => now(),
-            ]);
+            // Create 16 EMIs
+            $startDate = Carbon::now();
+            for ($i = 0; $i < 16; $i++) {
+                \App\Models\Emi::create([
+                    'user_id' => $userModel->id,
+                    'amount' => 1200,
+                    'month' => $startDate->copy()->addMonths($i)->format('F Y'),
+                    'status' => 'submitted',
+                    'paid_at' => now(),
+                ]);
+            }
             // $CardFront = null;
             // $CardBack = null;
             // if($request->hasFile('card_front')){
