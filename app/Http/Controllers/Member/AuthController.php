@@ -108,7 +108,8 @@ class AuthController extends Controller
                 'user_id' => $userModel->id,
                 'amount' => 1200,
                 'month' => Carbon::now()->format('F Y'),
-                'status' => 'unpaid',
+                'status' => 'submitted',
+                'paid_at' => now(),
             ]);
             // $CardFront = null;
             // $CardBack = null;

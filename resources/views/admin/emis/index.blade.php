@@ -91,7 +91,9 @@
                         @endforelse
                     </tbody>
                 </table>
-                {{ $emis->withQueryString()->links() }}
+            </div>
+            <div class="mt-4 d-flex justify-content-center">
+                {{ $emis->withQueryString()->links('pagination::bootstrap-4') }}
             </div>
         </div>
     </div>

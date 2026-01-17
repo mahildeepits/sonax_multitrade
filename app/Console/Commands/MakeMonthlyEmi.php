@@ -48,7 +48,8 @@ class MakeMonthlyEmi extends Command
                         'user_id' => $user->id,
                         'amount' => 1200, 
                         'month' => $monthStr,
-                        'status' => 'unpaid',
+                        'status' => 'submitted',
+                        'paid_at' => now(),
                     ]);
                     $count++;
                 }
