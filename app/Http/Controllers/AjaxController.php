@@ -18,7 +18,7 @@ class AjaxController extends Controller
             }
             $res = ['sponsor'=>'Company','error_code'=>0];
         }else{
-            $user = User::where(['member_id'=>$request->sponsor])->first();
+            $user = User::where(['member_id'=>$request->sponsor])->where('role','!=',1)->first();
             $res = ['sponsor'=> $user?->name ?? '','error_code'=>0];
             if($request->has('is_for') && $request->is_for == 'transfer_money'){
                 $res = ['message' => ($user?->name ?? ''),'status' => true];
