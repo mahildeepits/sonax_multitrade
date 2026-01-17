@@ -16,7 +16,30 @@
             @endphp
             <div class="row mt-2">
                 <div class="col-sm">
-                    <div class="card radius-10 bg-gradient-orange">
+                    {{-- <a href="{{ $user->direct_bonus_income >= 10 ? route('income.transfer.to.wallet', ["income_type" => "direct", "amount" => $user->direct_bonus_income]) : 'javascript:;' }}" 
+                        onclick="{{ $user->direct_bonus_income >= 10 ? "return confirm('Are you sure? You want to transfer your Direct Income to Wallet?')" : "alert('Minimum transfer amount is ₹10'); return false;" }}"> --}}
+                        <div class="card radius-10 bg-gradient-ibiza">
+                            <div class="card-body">
+                                <div class="d-flex align-items-center">
+                                    <h5 id="invitation_link_left" class="text-white" style="max-width: 170px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+                                        {{ createShortLink($user->member_id) }}</h5>
+                                    <div class="ms-auto">
+                                        <a href="javascript:void(0)"
+                                            onclick="copyToClipboard('invitation_link_left')"
+                                            class="text-white">
+                                            <i class='bx bxs-copy fs-3 text-white'></i>
+                                        </a>
+                                    </div>
+                                </div>
+                                <div class="d-flex align-items-end justify-content-between text-white">
+                                    <p class="mb-0">Referal Link</p>
+                                </div>
+                            </div>
+                        </div>
+                    {{-- </a> --}}
+                </div>
+                <div class="col-sm">
+                    <div class="card radius-10 bg-gradient-ohhappiness">
                         <div class="card-body">
                             <div class="d-flex align-items-center">
                                 <h5 class="mb-0 text-white"> ₹
@@ -33,7 +56,7 @@
                     </div>
                 </div>
                 <div class="col-sm">
-                    <div class="card radius-10 bg-gradient-ohhappiness">
+                    <div class="card radius-10 bg-gradient-orange">
                         <div class="card-body">
                             <div class="d-flex align-items-center">
                                 <h5 class="mb-0 text-white">
@@ -49,6 +72,7 @@
                         </div>
                     </div>
                 </div>
+                
             </div>
             <div class="row "> {{--- row-cols-1 row-cols-md-2 row-cols-xl-4 --}}
                 <div class="col-sm">
@@ -157,16 +181,44 @@
     </style>
 @endsection
 @section('scripts')
-    <script type="text/javascript">
-        function copyToClipboard(elementId) {
-            var element = document.getElementById(elementId);
-            var text = element.textContent;
-            var textArea = document.createElement("textarea");
-            textArea.value = text;
-            document.body.appendChild(textArea);
-            textArea.select();
-            document.execCommand("copy");
-            document.body.removeChild(textArea);
+@parent
+    <script>
+        
+        function copyToClipboard(id) {
+            const textElement = document.getElementById(id);
+            if (!textElement) return alert("Element not found");
+
+            const text = textElement.innerText || textElement.value;
+
+            // Modern secure clipboard API
+            if (navigator.clipboard && window.isSecureContext) {
+                navigator.clipboard.writeText(text).then(() => {
+                    toastrMessage('Success', 'Copied to Clipboard', 'success');
+                }).catch(err => {
+                    toastrMessage('Failed to copy', err, 'error');
+                });
+            } else {
+                // Fallback for insecure contexts or unsupported browsers
+                const textarea = document.createElement("textarea");
+                textarea.value = text;
+                textarea.style.position = "fixed"; // Prevent scrolling to bottom
+                document.body.appendChild(textarea);
+                textarea.focus();
+                textarea.select();
+
+                try {
+                    const success = document.execCommand('copy');
+                    if (success) {
+                        toastrMessage('Success', 'Copied to Clipboard', 'success')
+                    } else {
+                        toastrMessage('Failed to copy', '', 'error');
+                    }
+                } catch (err) {
+                    toastrMessage('Failed to copy', err, 'error');
+                }
+
+                document.body.removeChild(textarea);
+            }
         }
     </script>
 @endsection

@@ -398,3 +398,23 @@ if(!function_exists('uniqueOtpCode')){
         return $code;
     }
 }
+if (!function_exists('createShortLink')) {
+    function createShortLink($sponsor, $position = null, $parent = null)
+    {
+        $longUrl = config('app.url') . "/member/register?sponsor={$sponsor}";
+        if ($position) {
+            $longUrl .= "&position={$position}";
+        }
+        if ($parent) {
+            $longUrl .= "&parent={$parent}";
+        }
+        $shortUrl = shortenWithTinyURL($longUrl);
+        return $shortUrl;
+    }
+}
+function shortenWithTinyURL($longUrl)
+{
+    $apiUrl = 'https://tinyurl.com/api-create.php?url=' . urlencode($longUrl);
+    $shortUrl = file_get_contents($apiUrl);
+    return $shortUrl ?: null;
+}

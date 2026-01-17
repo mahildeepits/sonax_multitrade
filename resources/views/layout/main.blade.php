@@ -206,6 +206,16 @@
                 className: 'custom-toast',
             });
         }
+        function toastrMessage(heading, message, type = 'info') {
+            $.toast({
+                heading: heading,
+                text: message,
+                icon: type, // success | error | info | warning
+                showHideTransition: 'slide',
+                loader: true,
+                loaderBg: type === 'error' ? '#c6001e' : '#9EC600'
+            });
+        }
         function ajaxFormSubmit(form){
                 event.preventDefault();
                 $('.invalid-feedback').removeClass('d-block text-danger').text('');
@@ -297,6 +307,7 @@
                 $('#topupModal').modal('hide');
             });
             
+        
         });
     </script>
 @show
