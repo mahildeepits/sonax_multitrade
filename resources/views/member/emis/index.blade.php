@@ -32,6 +32,9 @@
                                 if($oldEmi->status != 'approved' ){
                                     $status = false;
                                 }
+                                if($newEmi->month != now()->format('F Y')){
+                                    $status = false;
+                                }
                             }
                         @endphp
                         <tr>
