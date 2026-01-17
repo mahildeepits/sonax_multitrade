@@ -9,6 +9,11 @@
                     <i class="menu-icon icon-home4"></i><span>Dashboard</span>
                 </a>
             </li>
+            <li>
+                <a href="{{ route('admin.users') }}">
+                    <i class="menu-icon fa fa-users"></i><span>Users</span>
+                </a>
+            </li>
             <!-- <li>
                 <a href="javascript:void(0)">
                     <i class="menu-icon icon-apps"></i><span>Joining Kits</span><i class="accordion-icon fa fa-angle-left"></i>
@@ -46,11 +51,7 @@
                     <i class="menu-icon fa fa-money"></i><span>Payout Requests</span>
                 </a>
             </li> --}}
-            <li>
-                <a href="{{ route('admin.users') }}">
-                    <i class="menu-icon fa fa-users"></i><span>Users</span>
-                </a>
-            </li>
+            
             {{-- <li>
                 <a href="{{ route('pancard.report') }}">
                     <i class="menu-icon fa fa-id-card-o"></i><span>Pancard Report</span>
@@ -81,11 +82,11 @@
 {{--                    <li><a href="{{ route('admin.deleted.product') }}">Deleted Product</a></li>--}}
 {{--                </ul>--}}
 {{--            </li>--}}
-            <li>
+            <!-- <li>
                 <a href="{{ route('admin.charges') }}">
                     <i class="menu-icon fa fa-gears"></i><span>Admin Settings</span>
                 </a>
-            </li>
+            </li> -->
             <li>
                 <a href="{{ route('website.settings') }}">
                     <i class="menu-icon fa fa-globe"></i><span>Website Settings</span>

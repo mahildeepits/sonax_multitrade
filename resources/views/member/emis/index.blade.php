@@ -21,7 +21,19 @@
                         </tr>
                     </thead>
                     <tbody>
+                        @php
+                            $oldEmi = null;
+                        @endphp
                         @forelse($emis as $index => $emi)
+                        @php
+                            $newEmi = $emi;
+                            $status = true;
+                            if($oldEmi != null){
+                                if($oldEmi->status != 'approved' ){
+                                    $status = false;
+                                }
+                            }
+                        @endphp
                         <tr>
                             <td>{{ $index + 1 }}</td>
                             <td>₹{{ number_format($emi->amount, 0) }}</td>
@@ -33,7 +45,7 @@
                                 @if($emi->status == 'approved')
                                     <span class="badge bg-success">Paid & Verified</span>
                                 @elseif($emi->status == 'submitted')
-                                    <span class="badge bg-warning text-dark">Pending Verification</span>
+                                    <span class="badge bg-warning text-dark">{{ $status? 'Pending Verification' : 'Pending' }}</span>
                                 @elseif($emi->status == 'rejected' || $emi->status == 'Rejected')
                                     <span class="badge bg-danger">Rejected</span>
                                 @else
@@ -41,13 +53,24 @@
                                 @endif
                             </td>
                             <td>
-                                @if($emi->status == 'unpaid' || $emi->status == 'rejected' || $emi->status == 'Rejected')
-                                    <button class="btn btn-main btn-sm" onclick="openPaymentModal({{ $emi->id }}, {{ $emi->amount }})">Pay</button>
+                                @if($status)
+                                 @if($emi->status == 'unpaid')
+                                     <button class="btn btn-main btn-sm" onclick="openPaymentModal({{ $emi->id }}, {{ $emi->amount }})">Pay</button>
+                                 @elseif($emi->status == 'rejected' || $emi->status == 'Rejected')
+                                     <button class="btn btn-info btn-sm text-white" onclick="resubmitPayment({{ $emi->id }})">Re-submit</button>
+                                 @elseif($emi->status == 'approved')
+                                     <button class="btn btn-secondary btn-sm" disabled>Paid</button>
+                                 @else
+                                     <button class="btn btn-secondary btn-sm" disabled>Submitted</button>
+                                 @endif
                                 @else
-                                    <button class="btn btn-secondary btn-sm" disabled>Paid</button>
+                                 <button class="btn btn-warning btn-sm" disabled>Upcoming</button>
                                 @endif
-                            </td>
+                             </td>
                         </tr>
+                        @php
+                            $oldEmi = $emi;
+                        @endphp
                         @empty
                         <tr>
                             <td colspan="8" class="text-center">No Installments found.</td>
@@ -99,6 +122,40 @@
         $('#modalEmiId').val(id);
         $('#modalAmount').text(amount);
         $('#paymentModal').modal('show');
+    }
+
+    function resubmitPayment(id) {
+        if (confirm("Do you want to Re-submit this payment, to verify by admin ?")) {
+            $.ajax({
+                url: "{{ route('member.emi.pay') }}",
+                type: 'POST',
+                data: {
+                    _token: "{{ csrf_token() }}",
+                    emi_id: id
+                },
+                success: function(response) {
+                    if (response.success) {
+                        if (typeof toasterMessanger !== 'undefined') {
+                            toasterMessanger.success('Success', response.message);
+                        } else {
+                            alert(response.message);
+                        }
+                        setTimeout(function() {
+                            location.reload();
+                        }, 1000);
+                    } else {
+                        if (typeof toasterMessanger !== 'undefined') {
+                            toasterMessanger.error('Error', response.message);
+                        } else {
+                            alert(response.message);
+                        }
+                    }
+                },
+                error: function(xhr) {
+                    alert('An error occurred');
+                }
+            });
+        }
     }
 
     $('#paymentForm').on('submit', function(e) {

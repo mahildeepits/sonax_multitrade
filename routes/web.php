@@ -170,6 +170,7 @@ Route::group(['prefix'=>'admin'], function (){
 
         // EMI Routes (Admin)
         Route::get('emis', [AdminEmiController::class, 'index'])->name('admin.emis.index');
+        Route::get('user/{id}/emis', [AdminEmiController::class, 'userEmis'])->name('admin.user.emis');
         Route::post('emi/verify', [AdminEmiController::class, 'verify'])->name('admin.emi.verify');
         Route::post('emi/reject', [AdminEmiController::class, 'reject'])->name('admin.emi.reject');
 

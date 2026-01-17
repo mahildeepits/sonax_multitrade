@@ -32,6 +32,14 @@ class EmiController extends Controller
         return view('admin.emis.index', compact('emis'));
     }
 
+    public function userEmis($userId)
+    {
+        $user = User::findOrFail($userId);
+        $emis = Emi::where('user_id', $userId)->orderBy('id', 'asc')->get();
+
+        return view('admin.emis.user_emis_list', compact('emis', 'user'));
+    }
+
     public function verify(Request $request)
     {
         $request->validate(['id' => 'required|exists:emis,id']);

@@ -97,6 +97,7 @@
                                         <td>
                                             <a target="_blank" href="{{ route('admin.edit.user',['member_id'=>$user->member_id]) }}" class="btn btn-info btn-xs">Edit</a>
                                             <a href="{{ route('admin.users',['kyc_details'=>$user->id]) }}" class="btn btn-danger btn-xs">KYC</a>
+                                            <button class="btn btn-primary btn-xs view-emis-btn" data-id="{{ $user->id }}" data-name="{{ $user->name }}">Installments</button>
                                             @if($user->is_blocked)
                                                 <a href="{{ route('admin.users',['unblock_user'=>$user->id]) }}" class="btn btn-danger btn-xs">Un-Block</a>
                                             @else
@@ -117,14 +118,35 @@
                                 @endforeach
                             </tbody>
                         </table>
-{{--                        <div class="float-right">--}}
-{{--                            {!! $users->render('vendor.pagination.default') !!}--}}
-{{--                        </div>--}}
                     </div>
                 </div>
             </div>
         </div>
     </div><!-- Main Wrapper -->
+
+    <!-- Installments Modal -->
+    <div class="modal fade" id="emis-modal" tabindex="-1" role="dialog" aria-hidden="true">
+        <div class="modal-dialog modal-lg" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Installments for <span id="modal-user-name"></span></h5>
+                    <button type="button" class="close close-emis-modal" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body" id="emis-modal-body">
+                    <div class="text-center">
+                        <div class="spinner-border text-primary" role="status">
+                            <span class="sr-only">Loading...</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary close-emis-modal" data-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
 @endsection
 
 @section('scripts')
@@ -139,6 +161,86 @@
             @if(request()->has('kyc_details'))
                 $('#kyc-modal').modal('show');
             @endif
+
+            var currentUserId = null;
+
+            function loadUserEmis(userId) {
+                $('#emis-modal-body').html('<div class="text-center"><div class="spinner-border text-primary" role="status"><span class="sr-only">Loading...</span></div></div>');
+                $.get("{{ url('admin/user') }}/" + userId + "/emis", function(data) {
+                    $('#emis-modal-body').html(data);
+                });
+            }
+
+            $('.view-emis-btn').click(function() {
+                var btn = $(this);
+                currentUserId = btn.data('id');
+                var userName = btn.data('name');
+                $('#modal-user-name').text(userName);
+                $('#emis-modal').modal('show');
+                loadUserEmis(currentUserId);
+            });
+
+            $(document).on('click', '.modal-verify-btn', function() {
+                if(!confirm('Are you sure you want to verify this installment?')) return;
+                var id = $(this).data('id');
+                var btn = $(this);
+                btn.prop('disabled', true).html('<i class="fa fa-spinner fa-spin"></i>');
+                
+                $.ajax({
+                    url: "{{ route('admin.emi.verify') }}",
+                    type: "POST",
+                    data: {
+                        _token: "{{ csrf_token() }}",
+                        id: id
+                    },
+                    success: function(res) {
+                        if(res.success) {
+                            if(typeof toastr !== 'undefined') toastr.success(res.message); else alert(res.message);
+                            loadUserEmis(currentUserId);
+                        } else {
+                            if(typeof toastr !== 'undefined') toastr.error(res.message); else alert(res.message);
+                            btn.prop('disabled', false).text('Verify');
+                        }
+                    },
+                    error: function() {
+                        alert('Something went wrong!');
+                        btn.prop('disabled', false).text('Verify');
+                    }
+                });
+            });
+
+            $(document).on('click', '.modal-reject-btn', function() {
+                if(!confirm('Are you sure you want to REJECT this installment?')) return;
+                var id = $(this).data('id');
+                var btn = $(this);
+                btn.prop('disabled', true).html('<i class="fa fa-spinner fa-spin"></i>');
+
+                $.ajax({
+                    url: "{{ route('admin.emi.reject') }}",
+                    type: "POST",
+                    data: {
+                        _token: "{{ csrf_token() }}",
+                        id: id
+                    },
+                    success: function(res) {
+                        if(res.success) {
+                            if(typeof toastr !== 'undefined') toastr.success(res.message); else alert(res.message);
+                            loadUserEmis(currentUserId);
+                        } else {
+                            if(typeof toastr !== 'undefined') toastr.error(res.message); else alert(res.message);
+                            btn.prop('disabled', false).text('Reject');
+                        }
+                    },
+                    error: function() {
+                        alert('Something went wrong!');
+                        btn.prop('disabled', false).text('Reject');
+                    }
+                });
+            });
+
+            $(document).on('click', '.close-emis-modal', function() {
+                $('#emis-modal').modal('hide');
+            });
         });
     </script>
 @endsection
