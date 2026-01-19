@@ -349,5 +349,15 @@ class User extends Authenticatable
         return $this->hasMany(Emi::class, 'user_id', 'id');
     }
 
+    public function getRewardIncomeCreditAttribute(){
+        return round($this->walletTransations()
+                    ->where(function($query) {
+                        $query->whereIn('keyword', [
+                            'self_transfer_reward',
+                            'reward_income'
+                        ]);
+                    })
+                    ->sum('amount'));
+    }
 
 }

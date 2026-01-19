@@ -1,10 +1,22 @@
 @extends('layout.main')
 @section('content')
 <div class="page-content">
-    <div class="card radius-10">
-        <div class="card-header border-bottom-0 bg-transparent">
-            <h5 class="mb-0">My Installments</h5>
+    <div class="page-breadcrumb d-none d-sm-flex align-items-center mb-3">
+        <!-- <div class="breadcrumb-title pe-3">My Installments</div> -->
+        <div class="ps-3">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb mb-0 p-0">
+                    <li class="breadcrumb-item"><a href="{{ route('member.dashboard') }}"><i class="bx bx-home-alt"></i></a>
+                    </li>
+                    <li class="breadcrumb-item active" aria-current="page">My Installments</li>
+                </ol>
+            </nav>
         </div>
+    </div>
+    <div class="card radius-10">
+        <!-- <div class="card-header border-bottom-0 bg-transparent">
+            <h5 class="mb-0">My Installments</h5>
+        </div> -->
         <div class="card-body">
             <div class="table-responsive">
                 <table class="table align-middle mb-0">
@@ -14,7 +26,7 @@
                             <th>Installment Amount</th>
                             <th>Month</th>
                             <th>Created At</th>
-                            <th>Paid At</th>
+                            <!-- <th>Paid At</th> -->
                             <th>Approved At</th>
                             <th>Status</th>
                             <th>Action</th>
@@ -42,7 +54,7 @@
                             <td>₹{{ number_format($emi->amount, 0) }}</td>
                             <td>{{ $emi->month }}</td>
                             <td>{{ $emi->created_at->format('d M Y') }}</td>
-                            <td>{{ $emi->paid_at ? \Carbon\Carbon::parse($emi->paid_at)->format('d M Y') : '-' }}</td>
+                            <!-- <td>{{ $emi->paid_at ? \Carbon\Carbon::parse($emi->paid_at)->format('d M Y') : '-' }}</td> -->
                             <td>{{ $emi->approved_at ? \Carbon\Carbon::parse($emi->approved_at)->format('d M Y') : '-' }}</td>
                             <td>
                                 @if($emi->status == 'approved')

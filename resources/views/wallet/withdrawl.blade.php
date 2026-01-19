@@ -52,6 +52,26 @@ $walletBalance = authUser()->walletIncomesByKey();
                             </div>
                         @endif
 
+                        @php
+                            $rewardIncomeCredit = $user->reward_income_credit;
+                            $daysSinceCreation = $user->created_at->diffInDays(now());
+                        @endphp
+
+                        @if($daysSinceCreation < 90 && $rewardIncomeCredit > 0)
+                            <div class="alert alert-info border-0 bg-info alert-dismissible fade show">
+                                <div class="text-white">
+                                    <i class='bx bx-info-circle'></i> You can withdrawal you rewards Income After 90 days. 
+                                    <strong>₹{{ $rewardIncomeCredit }}</strong>
+                                </div>
+                            </div>
+                        @elseif($daysSinceCreation >= 90 && $rewardIncomeCredit > 0)
+                            <div class="alert alert-success border-0 bg-success alert-dismissible fade show">
+                                <div class="text-white">
+                                    <i class='bx bx-check-circle'></i> You can withrawal your reward income now onwards.
+                                </div>
+                            </div>
+                        @endif
+
                         <div class="balance-card bg-light p-3 rounded mb-4 text-center border">
                             <h6 class="text-muted mb-1">Available Wallet Balance</h6>
                             <h2 class="mb-0 text-dark">₹{{ $walletBalance ?? '0' }}</h2>

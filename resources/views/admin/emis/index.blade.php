@@ -98,6 +98,120 @@
         </div>
     </div>
 </div>
+
+<!-- Welcome Notification Modal -->
+<div id="welcomeHasModal" class="welcome-modal-overlay" style="display: none;">
+    <div class="welcome-modal-content">
+        <div class="welcome-modal-header">
+            <h2 class="animate-pop">🎉 Congratulations 🎉</h2>
+        </div>
+        <div class="welcome-modal-body">
+            <h3 class="welcome-username" id="welcomeUserName">User Name</h3>
+            <p class="welcome-text">Welcome to our <span class="brand-name">SonaxMultitrade</span> Family.</p>
+            <div class="member-badge">
+                Member ID: <span id="welcomeMemberId">12345</span>
+            </div>
+        </div>
+        <div class="welcome-modal-footer">
+            <button type="button" class="btn btn-welcome-close" onclick="closeWelcomeModal()">Close & Continue</button>
+        </div>
+    </div>
+</div>
+
+<style>
+.welcome-modal-overlay {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    background: rgba(0,0,0,0.85); /* Darker overlay for focus */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 10000;
+    backdrop-filter: blur(5px);
+}
+.welcome-modal-content {
+    background: #fff;
+    padding: 40px; /* More padding */
+    border-radius: 25px;
+    text-align: center;
+    box-shadow: 0 25px 60px rgba(0,0,0,0.5);
+    max-width: 550px;
+    width: 90%;
+    position: relative;
+    border: 4px solid #fff;
+    background-clip: padding-box;
+    animation: zoomIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+.welcome-modal-content::before {
+    content: '';
+    position: absolute;
+    top: -4px; bottom: -4px;
+    left: -4px; right: -4px;
+    background: linear-gradient(45deg, #ff00cc, #333399, #ff00cc);
+    z-index: -1;
+    border-radius: 28px;
+    filter: blur(10px);
+    opacity: 0.5;
+}
+@keyframes zoomIn {
+    from { transform: scale(0.5); opacity: 0; }
+    to { transform: scale(1); opacity: 1; }
+}
+.welcome-modal-header h2 {
+    background: -webkit-linear-gradient(#f1c40f, #d35400);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    font-family: 'Arial Black', sans-serif;
+    font-size: 36px;
+    margin-bottom: 10px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+.welcome-username {
+    font-size: 32px;
+    font-weight: 800;
+    color: #2c3e50;
+    margin: 20px 0;
+    text-transform: capitalize;
+}
+.welcome-text {
+    font-size: 20px;
+    color: #555;
+    margin-bottom: 25px;
+    font-weight: 500;
+}
+.brand-name {
+    color: #e84393;
+    font-weight: bold;
+    font-style: italic;
+}
+.member-badge {
+    background: linear-gradient(to right, #00b09b, #96c93d);
+    color: #fff;
+    padding: 12px 30px;
+    border-radius: 50px;
+    display: inline-block;
+    font-weight: bold;
+    font-size: 18px;
+    box-shadow: 0 10px 20px rgba(0, 176, 155, 0.3);
+}
+.btn-welcome-close {
+    background: #34495e;
+    color: white;
+    padding: 12px 40px;
+    border-radius: 30px;
+    font-size: 16px;
+    border: none;
+    transition: all 0.3s;
+    font-weight: 600;
+}
+.btn-welcome-close:hover {
+    background: #2c3e50;
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+}
+</style>
 @endsection
 
 @section('scripts')
@@ -116,8 +230,15 @@
             },
             success: function(res){
                 if(res.success){
-                    if(typeof toastr !== 'undefined') toastr.success(res.message); else alert(res.message);
-                    location.reload();
+                    if(res.first_emi) {
+                        // Show popup
+                        $('#welcomeUserName').text(res.user_name);
+                        $('#welcomeMemberId').text(res.member_id);
+                        $('#welcomeHasModal').css('display', 'flex').hide().fadeIn();
+                    } else {
+                        if(typeof toastr !== 'undefined') toastr.success(res.message); else alert(res.message);
+                        location.reload();
+                    }
                 } else {
                     if(typeof toastr !== 'undefined') toastr.error(res.message); else alert(res.message);
                 }
@@ -145,5 +266,11 @@
             }
         });
     });
+
+    function closeWelcomeModal() {
+        $('#welcomeHasModal').fadeOut(function() {
+            location.reload();
+        });
+    }
 </script>
 @endsection

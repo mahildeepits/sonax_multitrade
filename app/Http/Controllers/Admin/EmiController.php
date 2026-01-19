@@ -93,7 +93,16 @@ class EmiController extends Controller
         // Generate Level Income
         $this->generateLevelIncome($user);
         \App\Helpers\RewardHelper::distributeEmiRewards($user);
-        return response()->json(['success' => true, 'message' => 'EMI Verified and Income Generated Successfully']);
+        // Check for First EMI for Popup
+        $approvedEmisCountGlobal = Emi::where('user_id', $user->id)->where('status', 'approved')->count();
+
+        return response()->json([
+            'success' => true, 
+            'message' => 'EMI Verified and Income Generated Successfully',
+            'first_emi' => ($approvedEmisCountGlobal == 1),
+            'user_name' => $user->name,
+            'member_id' => $user->member_id
+        ]);
     }
 
     private function generateLevelIncome($user)

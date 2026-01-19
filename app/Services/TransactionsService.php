@@ -46,6 +46,25 @@ class TransactionsService {
         }
         $requestAmt = (float)$request->amount;
         $totalBalance = $user->walletIncomesByKey('totalIncome');
+
+        // Check for Reward Income Lock
+        $rewardIncomeCredit = $user->reward_income_credit;
+        $daysSinceCreation = $user->created_at->diffInDays(now());
+        
+        if ($daysSinceCreation < 90 && $rewardIncomeCredit > 0) {
+            $withdrawableBalance = $totalBalance - $rewardIncomeCredit;
+            if ($withdrawableBalance < 0) {
+                $withdrawableBalance = 0;
+            }
+
+            if ($requestAmt > $withdrawableBalance) {
+                return response()->json([
+                    'status' => false,
+                    'message' => "You can withdrawal only ₹ {$withdrawableBalance}",
+                    'code' => 400
+                ]);
+            }
+        }
         
         if($totalBalance < $requestAmt){
             return response()->json(['status' => false,'message' => 'Insufficient Balance','code' => 400]);
