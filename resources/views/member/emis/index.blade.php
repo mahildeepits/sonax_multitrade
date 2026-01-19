@@ -68,7 +68,7 @@
                                 @endif
                             </td>
                             <td>
-                                @if($status)
+                                @if($status || $emi->status == 'approved')
                                  @if($emi->status == 'unpaid')
                                      <button class="btn btn-main btn-sm" onclick="openPaymentModal({{ $emi->id }}, {{ $emi->amount }})">Pay</button>
                                  @elseif($emi->status == 'rejected' || $emi->status == 'Rejected')
