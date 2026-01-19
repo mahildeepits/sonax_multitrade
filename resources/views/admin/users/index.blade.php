@@ -171,7 +171,7 @@
                 });
             }
 
-            $('.view-emis-btn').click(function() {
+            $(document).on('click', '.view-emis-btn', function() {
                 var btn = $(this);
                 currentUserId = btn.data('id');
                 var userName = btn.data('name');
