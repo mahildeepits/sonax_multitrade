@@ -7,7 +7,7 @@
                 <div class="d-flex align-items-center bg-white p-2 rounded shadow-sm">
                     <i class='bx bxs-volume-full text-danger fs-4 me-2'></i>   
                     <marquee scrollamount="10" onmouseover="this.stop();" onmouseout="this.start();">
-                        <p class="m-0 text-dark"><b>{{ ucwords($announcement->title) ?? '' }} : </b> {{ ucfirst($announcement->description) }}</p>
+                        <p class="m-0 text-dark" style="font-size: 16px;"><b>{{ ucwords($announcement->title) ?? '' }} : </b> {{ ucfirst($announcement->description) }}</p>
                     </marquee>
                 </div>
             </div>
