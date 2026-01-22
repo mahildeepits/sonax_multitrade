@@ -102,6 +102,11 @@
                     <i class="menu-icon fa fa-gift"></i><span>Rewards</span>
                 </a>
             </li>
+            <li>
+                <a href="{{ route('announcements.index') }}">
+                    <i class="menu-icon fa fa-bullhorn"></i><span>Announcements</span>
+                </a>
+            </li>
             {{-- <li>
                 <a href="{{ route('admin.courses') }}">
                     <i class="menu-icon fa fa-book"></i><span>Courses</span>

@@ -39,6 +39,7 @@ use App\Http\Controllers\Member\EmiController;
 use App\Http\Controllers\Admin\EmiController as AdminEmiController;
 use App\Http\Controllers\TransactionsController;
 use App\Http\Controllers\Admin\LevelIncomeController;
+use App\Http\Controllers\Admin\MemberFeaturesController;
 
 /*
 |--------------------------------------------------------------------------
@@ -176,6 +177,12 @@ Route::group(['prefix'=>'admin'], function (){
 
         // Level Income CRUD
         Route::resource('level-income', LevelIncomeController::class);
+
+        // Announcements
+        Route::get('/announcements',[MemberFeaturesController::class,'announcements'])->name('announcements.index');
+        Route::match(['get','post'],'/announcements/create',[MemberFeaturesController::class,'announcementCreate'])->name('announcements.create');
+        Route::delete('announcement/{id}/destroy', [MemberFeaturesController::class,'announcementDestroy'])->name('announcements.destroy');
+
     });
     Route::get('memberids',[UsersController::class,'searchMembers'])->name('search-members');
 });

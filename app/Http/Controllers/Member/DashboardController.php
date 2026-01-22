@@ -12,7 +12,8 @@ use Illuminate\Support\Facades\Session;
 class DashboardController extends Controller
 {
     public function index(){
-        return view('dashboard.index');
+        $announcement = \App\Models\Announcement::where('status', 1)->latest()->first();
+        return view('dashboard.index', compact('announcement'));
     }
 
     public function topupPage(){

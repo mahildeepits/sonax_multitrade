@@ -64,7 +64,7 @@
                 <div class="modal-content">
                     <div class="modal-header">
                         <h5 class="modal-title">User Top Up</h5>
-                        <button type="button" class="close close-topup-modal" data-dismiss="modal" aria-label="Close">
+                        <button type="button" class="close close-topup-modal closeModel" data-dismiss="modal" aria-label="Close">
                             <span aria-hidden="true">&times;</span>
                         </button>
                     </div>
@@ -221,6 +221,28 @@
                             });
                         }
                     })
+                }
+                function deleteRecord(route,title){
+                    if(confirm('Are you sure you want to delete this '+title+'?')){
+                        $.ajax({
+                            url:route,
+                            type:'Delete',
+                            data:{
+                                _token:'{{ csrf_token() }}'
+                            },
+                            success:function(res){
+                                if(res.status){
+                                    toasterMessage.success('Success',res.message);
+                                    $(document).find('table').DataTable().ajax.reload();
+                                }else{
+                                    toasterMessage.error('Error',res.message);
+                                }
+                            },
+                            error:function(error){
+                                toasterMessage.error('Error',error.responseJSON.message);
+                            }
+                        })
+                    }
                 }
                 $('.close-topup-modal').click(function(){
                     $('#comman-modal').modal('hide');

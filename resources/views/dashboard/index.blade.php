@@ -2,6 +2,16 @@
 @section('content')
     <div class="page-content bg-watermark">
         <div class="row">
+        @if(isset($announcement) && $announcement != null)
+            <div class="col-md-12 mb-3">
+                <div class="d-flex align-items-center bg-white p-2 rounded shadow-sm">
+                    <i class='bx bxs-volume-full text-danger fs-4 me-2'></i>   
+                    <marquee scrollamount="10" onmouseover="this.stop();" onmouseout="this.start();">
+                        <p class="m-0 text-dark"><b>{{ ucwords($announcement->title) ?? '' }} : </b> {{ ucfirst($announcement->description) }}</p>
+                    </marquee>
+                </div>
+            </div>
+        @endif
             <div class="col-md-12 text-center">
                 <h3>Welcome User, {{ auth()->guard('member')->user()->name }}</h3>
             </div>
