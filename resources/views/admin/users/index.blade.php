@@ -316,6 +316,49 @@
             background-position: 200% center;
         }
     }
+
+    /* Responsive Design */
+    @media (max-width: 768px) {
+        .welcome-content {
+            padding: 30px 20px;
+            width: 90%;
+            border-radius: 20px;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+        .celebration-icon {
+            font-size: 50px;
+            margin-bottom: 5px;
+        }
+        .welcome-header h2 {
+            font-size: 24px;
+            margin-bottom: 10px;
+            letter-spacing: 1px;
+        }
+        .welcome-username {
+            font-size: 24px;
+            margin: 5px 0 15px 0;
+        }
+        .welcome-text {
+            font-size: 14px;
+            margin-bottom: 20px;
+        }
+        .member-badge {
+            padding: 10px 30px;
+            min-width: 200px;
+        }
+        .badge-value {
+            font-size: 20px;
+        }
+        .close-overlay-btn {
+            top: 15px;
+            right: 15px;
+            width: 35px;
+            height: 35px;
+            font-size: 20px;
+            line-height: 30px;
+        }
+    }
     </style>
 @endsection
 
