@@ -244,6 +244,9 @@ class User extends Authenticatable
     public function latestReward(){
         return $this->achievedRewards()->latest()->first();
     }
+    public function firstReward(){
+        return $this->achievedRewards()->orderBy('id','asc')->first();
+    }
 
     public function allChildMembers(){
         return $this->hasMany(self::class,'sponsor_id','member_id');

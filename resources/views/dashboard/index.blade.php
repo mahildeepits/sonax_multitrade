@@ -52,6 +52,23 @@
                     <div class="card radius-10 bg-gradient-ohhappiness">
                         <div class="card-body">
                             <div class="d-flex align-items-center">
+                                <h5 class="mb-0 text-white"> 
+                                    {{ $user?->sponsor?->name ?? 'N/A' }} ({{ $user?->sponsor?->member_id ?? 'N/A' }})
+                                </h5>
+                                <div class="ms-auto">
+                                   <i class='bx bx-user fs-3 text-white'></i>
+                                </div>
+                            </div>
+                            <div class="d-flex align-items-center text-white">
+                                <p class="mb-0">Sponsor Name & ID</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-sm">
+                    <div class="card radius-10 bg-gradient-orange">
+                        <div class="card-body">
+                            <div class="d-flex align-items-center">
                                 <h5 class="mb-0 text-white"> ₹
                                     {{ $user->total_income }}
                                 </h5>
@@ -60,13 +77,13 @@
                                 </div>
                             </div>
                             <div class="d-flex align-items-center text-white">
-                                <p class="mb-0">Total Income</p>
+                                <p class="mb-0" title="Total Income Without Charges">Total Income</p>
                             </div>
                         </div>
                     </div>
                 </div>
                 <div class="col-sm">
-                    <div class="card radius-10 bg-gradient-orange">
+                    <div class="card radius-10 bg-gradient-deepblue">
                         <div class="card-body">
                             <div class="d-flex align-items-center">
                                 <h5 class="mb-0 text-white">
@@ -77,12 +94,11 @@
                                 </div>
                             </div>
                             <div class="d-flex align-items-center text-white">
-                                <p class="mb-0" title="Total Income Without Charges">Wallet Balance</p>
+                                <p class="mb-0" title="Total Income With Charges">Wallet Balance</p>
                             </div>
                         </div>
                     </div>
                 </div>
-                
             </div>
             <div class="row "> {{--- row-cols-1 row-cols-md-2 row-cols-xl-4 --}}
                 <div class="col-sm">
