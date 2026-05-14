@@ -182,7 +182,7 @@ class AuthController extends Controller
 //                RewardHelper::giveRewards();
             }
 //            $this->sendSms($userModel->mobile,$userModel->member_id,$request->password);
-           $this->sendEmail($request->email, $userModel);
+        //    $this->sendEmail($request->email, $userModel);
             DB::commit();
         }catch(\Exception $e){
             DB::rollBack();
