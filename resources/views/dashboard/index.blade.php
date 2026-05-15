@@ -188,8 +188,13 @@
                 </div>
             </div>
         @endif
+
+        <a href="{{ route('member.my_product') }}" class="floating-gift-btn" title="My Products">
+            <i class='bx bxs-gift'></i>
+        </a>
     </div>
 @endsection
+
 @section('css')
     @parent
     <style>
@@ -204,7 +209,55 @@
             display: inline-block;
             position: absolute;
         }
+
+        .floating-gift-btn {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            width: 65px;
+            height: 65px;
+            background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+            color: #fff;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 32px;
+            box-shadow: 0 10px 25px rgba(37, 117, 252, 0.5);
+            z-index: 1000;
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            text-decoration: none;
+            border: 2px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .floating-gift-btn:hover {
+            transform: scale(1.15) rotate(15deg);
+            box-shadow: 0 15px 35px rgba(37, 117, 252, 0.6);
+            color: #fff;
+            background: linear-gradient(135deg, #2575fc 0%, #6a11cb 100%);
+        }
+
+        @keyframes pulse-gift {
+            0% { box-shadow: 0 0 0 0 rgba(37, 117, 252, 0.7); }
+            70% { box-shadow: 0 0 0 15px rgba(37, 117, 252, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(37, 117, 252, 0); }
+        }
+
+        .floating-gift-btn {
+            animation: pulse-gift 2s infinite;
+        }
+
+        @media (max-width: 768px) {
+            .floating-gift-btn {
+                bottom: 20px;
+                right: 20px;
+                width: 55px;
+                height: 55px;
+                font-size: 28px;
+            }
+        }
     </style>
+
 @endsection
 @section('scripts')
 @parent

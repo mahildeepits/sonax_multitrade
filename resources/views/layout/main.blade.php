@@ -269,27 +269,49 @@
             @php
                 $sessionData = explode('|',session('success'));
             @endphp
-            $.toast({
-                heading: '{{ $sessionData[0] }}',
-                text: '{{ $sessionData[1] }}',
-                icon: 'info',
-                showHideTransition: 'slide',
-                loader: true,        // Change it to false to disable loader
-                loaderBg: '#9EC600'  // To change the background
-            });
+            @if(count($sessionData) > 1)
+                $.toast({
+                    heading: '{{ $sessionData[0] }}',
+                    text: '{{ $sessionData[1] }}',
+                    icon: 'info',
+                    showHideTransition: 'slide',
+                    loader: true,
+                    loaderBg: '#9EC600'
+                });
+            @else
+                $.toast({
+                    heading: 'Success',
+                    text: '{{ $sessionData[0] }}',
+                    icon: 'info',
+                    showHideTransition: 'slide',
+                    loader: true,
+                    loaderBg: '#9EC600'
+                });
+            @endif
             @endif
             @if(session()->has('error'))
                 @php
                     $sessionData = explode('|',session('error'));
                 @endphp
-                $.toast({
-                    heading: '{{ $sessionData[0] }}',
-                    text: '{{ $sessionData[1] }}',
-                    icon: 'error',
-                    showHideTransition: 'slide',
-                    loader: true,        // Change it to false to disable loader
-                    loaderBg: '#c6001e'  // To change the background
-                });
+                @if(count($sessionData) > 1)
+                    $.toast({
+                        heading: '{{ $sessionData[0] }}',
+                        text: '{{ $sessionData[1] }}',
+                        icon: 'error',
+                        showHideTransition: 'slide',
+                        loader: true,
+                        loaderBg: '#c6001e'
+                    });
+                @else
+                    $.toast({
+                        heading: 'Error',
+                        text: '{{ $sessionData[0] }}',
+                        icon: 'error',
+                        showHideTransition: 'slide',
+                        loader: true,
+                        loaderBg: '#c6001e'
+                    });
+                @endif
             @endif
             try{
                 $('.static-datatable').dataTable({

@@ -125,13 +125,20 @@
                     @php
                         $message = explode('|',session('success'));
                     @endphp
-
-                    toastr.success('{{ $message[1] }}','{{ $message[0] }}')
+                    @if(count($message) > 1)
+                        toastr.success('{{ $message[1] }}','{{ $message[0] }}')
+                    @else
+                        toastr.success('{{ $message[0] }}','Success')
+                    @endif
                     @elseif(session()->has('error'))
                     @php
                         $message = explode('|',session('error'));
                     @endphp
-                    toastr.error('{{ $message[1] }}','{{ $message[0] }}')
+                    @if(count($message) > 1)
+                        toastr.error('{{ $message[1] }}','{{ $message[0] }}')
+                    @else
+                        toastr.error('{{ $message[0] }}','Error')
+                    @endif
                     @endif
                 });
             </script>

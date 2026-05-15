@@ -16,14 +16,15 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
+        'member_id',
+        'sponsor_id',
+        'selection_product_id',
         'enc_password',
         'alter_email',
-        'member_id',
         'epin',
         'parent_string',
         'left_count',
         'right_count',
-        'sponsor_id',
         'parent_id',
         'parent_leg',
         'father_name',
@@ -361,6 +362,11 @@ class User extends Authenticatable
                         ]);
                     })
                     ->sum('amount'));
+    }
+
+    public function selectionProduct()
+    {
+        return $this->belongsTo(SelectionProduct::class, 'selection_product_id');
     }
 
 }

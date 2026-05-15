@@ -101,6 +101,13 @@
                 </a>
             </li>
             <li>
+                <a href="{{ route('member.my_product') }}">
+                    <div class="parent-icon"><i class="bx bx-shopping-bag"></i>
+                    </div>
+                    <div class="menu-title">My Product</div>
+                </a>
+            </li>
+            <li>
                 <a href="{{ route('member.user.payouts') }}">
                     <div class="parent-icon"><i class="bx bx-award"></i>
                     </div>

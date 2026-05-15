@@ -40,6 +40,8 @@ use App\Http\Controllers\Admin\EmiController as AdminEmiController;
 use App\Http\Controllers\TransactionsController;
 use App\Http\Controllers\Admin\LevelIncomeController;
 use App\Http\Controllers\Admin\MemberFeaturesController;
+use App\Http\Controllers\Admin\SelectionProductController as AdminSelectionProductController;
+use App\Http\Controllers\Member\SelectionProductController as MemberSelectionProductController;
 
 /*
 |--------------------------------------------------------------------------
@@ -183,6 +185,12 @@ Route::group(['prefix'=>'admin'], function (){
         Route::match(['get','post'],'/announcements/create',[MemberFeaturesController::class,'announcementCreate'])->name('announcements.create');
         Route::delete('announcement/{id}/destroy', [MemberFeaturesController::class,'announcementDestroy'])->name('announcements.destroy');
 
+        // Selection Products
+        Route::get('selection-products', [AdminSelectionProductController::class, 'index'])->name('admin.selection_products.index');
+        Route::post('selection-products', [AdminSelectionProductController::class, 'store'])->name('admin.selection_products.store');
+        Route::get('selection-products/delete/{id}', [AdminSelectionProductController::class, 'destroy'])->name('admin.selection_products.delete');
+        Route::get('selection-products/report', [AdminSelectionProductController::class, 'report'])->name('admin.selection_products.report');
+
     });
     Route::get('memberids',[UsersController::class,'searchMembers'])->name('search-members');
 });
@@ -268,6 +276,10 @@ Route::group(['prefix' => 'member'], function (){
         // EMI Routes (Member)
         Route::get('emis', [EmiController::class, 'index'])->name('member.emis.index');
         Route::post('emi/pay', [EmiController::class, 'pay'])->name('member.emi.pay');
+
+        // My Product Selection
+        Route::get('my-product', [MemberSelectionProductController::class, 'index'])->name('member.my_product');
+        Route::post('select-product', [MemberSelectionProductController::class, 'select'])->name('member.select_product');
     });
 
 
