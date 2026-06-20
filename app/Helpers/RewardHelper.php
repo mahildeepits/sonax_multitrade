@@ -39,36 +39,94 @@ class RewardHelper
     public static function distributeEmiRewards($user)
     {
         $currentSponsorMemberId = $user->sponsor_id;
-        $level = 1;
 
         while ($currentSponsorMemberId) {
             $sponsor = User::where('member_id', $currentSponsorMemberId)->first();
             if (!$sponsor) break;
 
-            // Count descendants at $level depth from this sponsor who have at least one approved EMI
-            $count = self::countDescendantsAtDepthWithApprovedEmi($sponsor, $level);
-
-            if ($count > 0) {
-                // Find the reward specifically for this level (e.g., LEVEL 1, LEVEL 2)
-                $reward = Reward::where('name', 'LEVEL ' . $level)->first();
-
-                if ($reward && $count >= $reward->pairs) {
-                    // Check if this sponsor has already achieved this specific reward
-                    $alreadyAchieved = RewardAchiever::where('user_id', $sponsor->id)
-                        ->where('reward_id', $reward->id)
-                        ->exists();
-
-                    if (!$alreadyAchieved) {
-                        // Achievement record and Reward Income generation
-                        self::saveRewardAchiever($sponsor, $reward);
-                    }
-                }
-            }
+            // Evaluate this sponsor for any rewards they qualify for
+            self::checkAndGiveEmiRewards($sponsor);
 
             // Move up to the next sponsor in the referral chain
             $currentSponsorMemberId = $sponsor->sponsor_id;
-            // Increase level: we check depth 1 for sponsor 1, depth 2 for sponsor 2, etc.
-            $level++;
+        }
+    }
+
+    /**
+     * Check if a sponsor qualifies for any rewards and save achievements.
+     */
+    public static function checkAndGiveEmiRewards($sponsor)
+    {
+        // Get all rewards ordered by id in ascending order
+        $rewards = Reward::orderBy('id', 'asc')->get();
+        if ($rewards->isEmpty()) {
+            return;
+        }
+
+        // Find the Level 1 reward to check for downline achievers
+        $level1Reward = Reward::where('name', 'like', 'Level 1')->first();
+        if (!$level1Reward) {
+            // Fallback to the first reward if name differs
+            $level1Reward = $rewards->first();
+        }
+
+        // Get sponsor descendants info
+        $descendantsInfo = self::getSponsorDescendantsInfo($sponsor);
+        $descendantMemberIds = $descendantsInfo['member_ids'];
+        $descendantUserIds = $descendantsInfo['user_ids'];
+
+        if (empty($descendantMemberIds)) {
+            return;
+        }
+
+        // Count descendants (any depth) who have at least one approved EMI and is_paid = 1
+        $totalTeamCount = User::where('is_paid', 1)
+            ->whereIn('member_id', $descendantMemberIds)
+            ->whereHas('emis', function($query) {
+                $query->where('status', 'approved');
+            })
+            ->count();
+
+        foreach ($rewards as $reward) {
+            // Check if this sponsor has already achieved this specific reward
+            $alreadyAchieved = RewardAchiever::where('user_id', $sponsor->id)
+                ->where('reward_id', $reward->id)
+                ->exists();
+
+            if ($alreadyAchieved) {
+                continue;
+            }
+
+            // Check if team count is sufficient
+            if ($totalTeamCount < $reward->pairs) {
+                // If they don't meet the count for this level, they won't meet it for higher levels
+                break;
+            }
+
+            // Parse level number from name (e.g. "Level 2" or "LEVEL 2" -> 2)
+            $levelNumber = 1;
+            if (preg_match('/level\s+(\d+)/i', $reward->name, $matches)) {
+                $levelNumber = (int)$matches[1];
+            }
+
+            // Check the downline achievement condition (Option 2)
+            // For Level N (where N = $levelNumber), it requires at least (N - 1) Level 1 achievers
+            if ($levelNumber > 1 && $level1Reward) {
+                $requiredLevel1AchieversCount = $levelNumber - 1;
+
+                // Count unique users in descendants who have achieved Level 1 reward
+                $achievedLevel1Count = RewardAchiever::whereIn('user_id', $descendantUserIds)
+                    ->where('reward_id', $level1Reward->id)
+                    ->count();
+
+                if ($achievedLevel1Count < $requiredLevel1AchieversCount) {
+                    // Does not qualify for this level
+                    continue;
+                }
+            }
+
+            // Sponsor qualifies! Save achievement and generate reward income
+            self::saveRewardAchiever($sponsor, $reward);
         }
     }
 
@@ -92,6 +150,45 @@ class RewardHelper
                 $query->where('status', 'approved');
             })
             ->count();
+    }
+
+    /**
+     * Helper to get all direct and indirect descendants (full depth) of a sponsor in the sponsor tree.
+     * Returns an array with 'member_ids' and 'user_ids'.
+     */
+    public static function getSponsorDescendantsInfo($sponsor)
+    {
+        $allDescendantMemberIds = [];
+        $allDescendantUserIds = [];
+        $currentLevelMemberIds = [$sponsor->member_id];
+        $visited = [$sponsor->member_id => true];
+
+        while (!empty($currentLevelMemberIds)) {
+            $children = User::whereIn('sponsor_id', $currentLevelMemberIds)
+                ->select('id', 'member_id')
+                ->get();
+                
+            if ($children->isEmpty()) {
+                break;
+            }
+
+            $nextLevelMemberIds = [];
+            foreach ($children as $child) {
+                if (!isset($visited[$child->member_id])) {
+                    $visited[$child->member_id] = true;
+                    $allDescendantMemberIds[] = $child->member_id;
+                    $allDescendantUserIds[] = $child->id;
+                    $nextLevelMemberIds[] = $child->member_id;
+                }
+            }
+            
+            $currentLevelMemberIds = $nextLevelMemberIds;
+        }
+
+        return [
+            'member_ids' => $allDescendantMemberIds,
+            'user_ids' => $allDescendantUserIds
+        ];
     }
 
     public static function getRewards(){
