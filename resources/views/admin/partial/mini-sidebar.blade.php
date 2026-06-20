@@ -103,6 +103,15 @@
                 </a>
             </li>
             <li>
+                <a href="javascript:void(0)">
+                    <i class="menu-icon fa fa-shopping-cart"></i><span>Selection Products</span><i class="accordion-icon fa fa-angle-left"></i>
+                </a>
+                <ul class="sub-menu">
+                    <li><a href="{{ route('admin.selection_products.index') }}">Add Product</a></li>
+                    <li><a href="{{ route('admin.selection_products.report') }}">Products Report</a></li>
+                </ul>
+            </li>
+            <li>
                 <a href="{{ route('announcements.index') }}">
                     <i class="menu-icon fa fa-bullhorn"></i><span>Announcements</span>
                 </a>

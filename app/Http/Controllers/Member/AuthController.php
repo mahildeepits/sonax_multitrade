@@ -111,7 +111,7 @@ class AuthController extends Controller
             for ($i = 0; $i < 16; $i++) {
                 \App\Models\Emi::create([
                     'user_id' => $userModel->id,
-                    'amount' => 1200,
+                    'amount' => 1300,
                     'month' => $startDate->copy()->addMonths($i)->format('F Y'),
                     'status' => 'submitted',
                     'paid_at' => now(),
@@ -182,7 +182,7 @@ class AuthController extends Controller
 //                RewardHelper::giveRewards();
             }
 //            $this->sendSms($userModel->mobile,$userModel->member_id,$request->password);
-        //    $this->sendEmail($request->email, $userModel);
+           $this->sendEmail($request->email, $userModel);
             DB::commit();
         }catch(\Exception $e){
             DB::rollBack();

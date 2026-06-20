@@ -46,7 +46,7 @@ class MakeMonthlyEmi extends Command
                 if ($totalEmis < 16) {
                     \App\Models\Emi::create([
                         'user_id' => $user->id,
-                        'amount' => 1200, 
+                        'amount' => 1300, 
                         'month' => $monthStr,
                         'status' => 'submitted',
                         'paid_at' => now(),

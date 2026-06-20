@@ -39,6 +39,8 @@ class RewardHelper
     public static function distributeEmiRewards($user)
     {
         $currentSponsorMemberId = $user->sponsor_id;
+        $level = 1;
+        $isUserQualified = true;
 
         while ($currentSponsorMemberId) {
             $sponsor = User::where('member_id', $currentSponsorMemberId)->first();
@@ -46,6 +48,40 @@ class RewardHelper
 
             // Evaluate this sponsor for any rewards they qualify for
             self::checkAndGiveEmiRewards($sponsor);
+            // Count descendants at $level depth from this sponsor who have at least one approved EMI
+            $qusers = self::countDescendantsAtDepthWithApprovedEmi($sponsor, $level);
+            $count = $qusers->count();
+           
+            if ($count > 0) {
+                // Find the reward specifically for this level (e.g., LEVEL 1, LEVEL 2)
+                $reward = Reward::where('name', 'LEVEL ' . $level)->first();
+
+                if ($reward && $count >= $reward->pairs) {
+                    $qualifyUserCount = 0;
+                    foreach($qusers as $quser){
+                        if($quser->firstReward() != null){
+                            $qualifyUserCount += 1;
+                        }
+                    }
+                    if($level > 1) {
+                        if($qualifyUserCount >= ($level - 1)){
+                            $isUserQualified = true;
+                        }else{
+                            $isUserQualified = false;
+                        }
+                    }
+
+                    // Check if this sponsor has already achieved this specific reward
+                    $alreadyAchieved = RewardAchiever::where('user_id', $sponsor->id)
+                        ->where('reward_id', $reward->id)
+                        ->exists();
+
+                    if (!$alreadyAchieved && $isUserQualified) {
+                        // Achievement record and Reward Income generation
+                        self::saveRewardAchiever($sponsor, $reward);
+                    }
+                }
+            }
 
             // Move up to the next sponsor in the referral chain
             $currentSponsorMemberId = $sponsor->sponsor_id;
@@ -141,7 +177,7 @@ class RewardHelper
             $currentNodes = User::whereIn('sponsor_id', $currentNodes)
                 ->pluck('member_id')
                 ->toArray();
-            if (empty($currentNodes)) return 0;
+            if (empty($currentNodes)) return collect([]);
         }
 
         // Return count of unique users at this depth with at least one approved EMI
@@ -149,7 +185,7 @@ class RewardHelper
             ->whereHas('emis', function($query) {
                 $query->where('status', 'approved');
             })
-            ->count();
+            ->get();
     }
 
     /**
